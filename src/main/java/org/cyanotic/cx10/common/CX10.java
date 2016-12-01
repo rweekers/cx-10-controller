@@ -1,4 +1,4 @@
-package org.cyanotic.cx10;
+package org.cyanotic.cx10.common;
 
 import org.cyanotic.cx10.io.controls.Controller;
 import org.cyanotic.cx10.io.controls.IController;
@@ -55,7 +55,12 @@ public class CX10 {
 
     public void disconnect() {
         if (heartbeat != null) {
-            heartbeat.interrupt();
+            heartbeat.kill();
+            try {
+                heartbeat.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         stopControls();
@@ -79,7 +84,12 @@ public class CX10 {
 
     public void stopControls() {
         if (controller != null) {
-            controller.interrupt();
+            controller.kill();
+            try {
+                controller.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             controller = null;
         }
     }
@@ -171,16 +181,12 @@ public class CX10 {
                     if (ffmpegOutput != null) {
                         ffmpegOutput.write(data);
                     }
-
-                    if (ffplayOutput == null && ffmpegOutput == null) {
-                        decoder.disconnect();
-                        break;
-                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
                 }
-            } while (data != null);
+            } while (ffplayOutput != null || ffmpegOutput != null);
+            decoder.disconnect();
             decoder = null;
         });
         t.start();

@@ -1,6 +1,6 @@
 package org.cyanotic.cx10.ui;
 
-import org.cyanotic.cx10.CX10;
+import org.cyanotic.cx10.common.CX10;
 import org.cyanotic.cx10.io.controls.Keyboard;
 import org.cyanotic.cx10.io.controls.XInput;
 
