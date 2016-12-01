@@ -160,30 +160,28 @@ public class CX10 {
 
         decoder = new CX10NalDecoder(HOST, 8888);
         decoder.connect();
-        final Thread t = new Thread(new Runnable() {
-            public void run() {
-                byte[] data;
-                do {
-                    try {
-                        data = decoder.readNal();
-                        if (ffplayOutput != null) {
-                            ffplayOutput.write(data);
-                        }
-                        if (ffmpegOutput != null) {
-                            ffmpegOutput.write(data);
-                        }
+        final Thread t = new Thread(() -> {
+            byte[] data;
+            do {
+                try {
+                    data = decoder.readNal();
+                    if (ffplayOutput != null) {
+                        ffplayOutput.write(data);
+                    }
+                    if (ffmpegOutput != null) {
+                        ffmpegOutput.write(data);
+                    }
 
-                        if (ffplayOutput == null && ffmpegOutput == null) {
-                            decoder.disconnect();
-                            break;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (ffplayOutput == null && ffmpegOutput == null) {
+                        decoder.disconnect();
                         break;
                     }
-                } while (data != null);
-                decoder = null;
-            }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            } while (data != null);
+            decoder = null;
         });
         t.start();
     }

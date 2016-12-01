@@ -53,17 +53,15 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(final ActionEvent e) {
-        new Thread(new Runnable() {
-            public void run() {
-                if (e.getSource() == btnConnect) {
-                    onConnectClicked();
-                } else if (e.getSource() == btnControls) {
-                    onControlsClicked();
-                } else if (e.getSource() == btnVideo) {
-                    onStartVideoStreamClicked();
-                } else if (e.getSource() == btnRecord) {
-                    onRecordClicked();
-                }
+        new Thread(() -> {
+            if (e.getSource() == btnConnect) {
+                onConnectClicked();
+            } else if (e.getSource() == btnControls) {
+                onControlsClicked();
+            } else if (e.getSource() == btnVideo) {
+                onStartVideoStreamClicked();
+            } else if (e.getSource() == btnRecord) {
+                onRecordClicked();
             }
         }).start();
     }
