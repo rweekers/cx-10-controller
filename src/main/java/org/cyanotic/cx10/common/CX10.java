@@ -1,5 +1,6 @@
 package org.cyanotic.cx10.common;
 
+import com.sun.net.httpserver.HttpServer;
 import org.cyanotic.cx10.io.controls.Controller;
 import org.cyanotic.cx10.io.controls.IController;
 import org.cyanotic.cx10.io.video.FFMpegProcessVideoEncoder;
@@ -13,10 +14,10 @@ import org.cyanotic.cx10.net.TransportConnection;
 import org.cyanotic.cx10.utils.ByteUtils;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -32,10 +33,12 @@ public class CX10 {
     private IVideoEncoder recorder;
     private Heartbeat heartbeat;
     private OutputStream ffplayOutput;
+    private OutputStream fileOutput;
     private OutputStream ffmpegOutput;
     private Socket ffplaySocket;
     private Socket ffmpegSocket;
     private CX10NalDecoder decoder;
+    private File tempFile;
 
     public void connect() throws IOException {
         if (transportConnection != null) {
@@ -170,25 +173,31 @@ public class CX10 {
 
         decoder = new CX10NalDecoder(HOST, 8888);
         decoder.connect();
-        final Thread t = new Thread(() -> {
-            byte[] data;
-            do {
-                try {
-                    data = decoder.readNal();
-                    if (ffplayOutput != null) {
-                        ffplayOutput.write(data);
-                    }
-                    if (ffmpegOutput != null) {
-                        ffmpegOutput.write(data);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-            } while (ffplayOutput != null || ffmpegOutput != null);
-            decoder.disconnect();
-            decoder = null;
+        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        server.createContext("/page", httpExchange -> {
+            byte[] response = ByteUtils.loadMessageFromFile("videopage.html");
+            System.out.println("Page Requested");
+            httpExchange.sendResponseHeaders(200, response.length);
+            OutputStream os = httpExchange.getResponseBody();
+            os.write(response);
+            os.close();
         });
-        t.start();
+        server.createContext("/video.mp4", httpExchange -> {
+            httpExchange.sendResponseHeaders(200, -1);
+            System.out.println("Video requested");
+            while (true) {
+                System.out.print(".");
+                byte[] buffer = new byte[4096];
+                decoder.read(buffer);
+                httpExchange.getResponseBody().write(buffer);
+            }
+        });
+        server.setExecutor(null); // creates a default executor
+        server.start();
+        try {
+            java.awt.Desktop.getDesktop().browse(new URI("http://localhost:8000/page"));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 }
