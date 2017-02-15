@@ -1,6 +1,6 @@
 # README #
 
-This is a sample application to control Cheerson CX10-WD drone from desktop using keyboard or a XInput Device (i.e. XBoxController)
+This is a sample application to control Cheerson CX10-WD drone from desktop using keyboard or code
 
 ### Stream/Record Video ###
 

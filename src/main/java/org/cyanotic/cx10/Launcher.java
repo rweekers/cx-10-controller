@@ -1,8 +1,10 @@
 package org.cyanotic.cx10;
 
-import com.ivan.xinput.exceptions.XInputNotLoadedException;
+import org.cyanotic.cx10.io.controls.FlyInACircle;
+import org.cyanotic.cx10.io.controls.Keyboard;
 import org.cyanotic.cx10.ui.MainWindow;
 
+import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -10,7 +12,7 @@ import java.io.IOException;
  */
 public class Launcher {
 
-    public static void main(String[] args) throws IOException, InterruptedException, XInputNotLoadedException {
-        new MainWindow();
+    public static void main(String[] args) throws IOException, InterruptedException {
+        new MainWindow(new Keyboard(KeyboardFocusManager.getCurrentKeyboardFocusManager()), new FlyInACircle());
     }
 }

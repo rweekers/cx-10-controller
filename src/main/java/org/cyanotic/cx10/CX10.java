@@ -1,7 +1,7 @@
 package org.cyanotic.cx10;
 
+import org.cyanotic.cx10.io.controls.CommandDispatcher;
 import org.cyanotic.cx10.io.controls.Controller;
-import org.cyanotic.cx10.io.controls.IController;
 import org.cyanotic.cx10.io.video.FFMpegProcessVideoEncoder;
 import org.cyanotic.cx10.io.video.FFPlayProcessVideoPlayer;
 import org.cyanotic.cx10.io.video.IVideoEncoder;
@@ -27,7 +27,7 @@ public class CX10 {
     public static final String HOST = "172.16.10.1";
 
     private TransportConnection transportConnection;
-    private Controller controller;
+    private CommandDispatcher commandDispatcher;
     private IVideoPlayer previewPlayer;
     private IVideoEncoder recorder;
     private Heartbeat heartbeat;
@@ -71,16 +71,16 @@ public class CX10 {
         }
     }
 
-    public void startControls(IController inputDevice) throws IOException {
+    public void startControls(Controller inputDevice) throws IOException {
         stopControls();
-        controller = new Controller(inputDevice, new CommandConnection(HOST, 8895));
-        controller.start();
+        commandDispatcher = new CommandDispatcher(inputDevice, new CommandConnection(HOST, 8895));
+        commandDispatcher.start();
     }
 
     public void stopControls() {
-        if (controller != null) {
-            controller.interrupt();
-            controller = null;
+        if (commandDispatcher != null) {
+            commandDispatcher.interrupt();
+            commandDispatcher = null;
         }
     }
 

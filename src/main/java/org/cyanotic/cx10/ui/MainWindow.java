@@ -1,14 +1,13 @@
 package org.cyanotic.cx10.ui;
 
 import org.cyanotic.cx10.CX10;
-import org.cyanotic.cx10.io.controls.Keyboard;
-import org.cyanotic.cx10.io.controls.XInput;
+import org.cyanotic.cx10.io.controls.Controller;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 /**
  * Created by orfeo.ciano on 29/11/2016.
@@ -16,22 +15,24 @@ import java.io.IOException;
 public class MainWindow extends JFrame implements ActionListener {
     private final CX10 cx10;
 
+    private JComboBox<Controller> cmbControllers;
     private JButton btnConnect;
     private JButton btnControls;
     private JButton btnVideo;
     private JButton btnRecord;
     private JLabel lblStatus;
     private JPanel panel;
-    private JRadioButton radioController;
-    private JRadioButton radioKeyboard;
 
     private boolean isConnected = false;
     private boolean isRecording = false;
     private boolean isPlaying = false;
     private boolean isControlled = false;
 
-    public MainWindow() {
+    public MainWindow(Controller... controllers) {
         this.cx10 = new CX10();
+
+        Stream.of(controllers).forEach(cmbControllers::addItem);
+
         btnConnect.setEnabled(true);
         btnControls.setEnabled(false);
         btnVideo.setEnabled(false);
@@ -44,7 +45,7 @@ public class MainWindow extends JFrame implements ActionListener {
 
         add(panel);
         pack();
-        setTitle("CX-10WD Controller");
+        setTitle("CX-10WD CommandDispatcher");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setAlwaysOnTop(true);
         setLocationByPlatform(true);
@@ -193,17 +194,16 @@ public class MainWindow extends JFrame implements ActionListener {
         MainWindowModel model;
         if (!isControlled) {
             try {
-                if (radioKeyboard.isSelected()) {
-                    cx10.startControls(new Keyboard(KeyboardFocusManager.getCurrentKeyboardFocusManager()));
-                } else if (radioController.isSelected()) {
-                    cx10.startControls(new XInput());
+                Controller controller = (Controller) cmbControllers.getSelectedItem();
+                if (controller != null) {
+                    cx10.startControls(controller);
                 } else {
                     return;
                 }
                 isControlled = true;
 
                 model = getModel();
-                model.setBtnControlsText("Stop Controller");
+                model.setBtnControlsText("Stop CommandDispatcher");
                 setModel(model);
 
             } catch (IOException e) {
@@ -218,7 +218,7 @@ public class MainWindow extends JFrame implements ActionListener {
             isControlled = false;
 
             model = getModel();
-            model.setBtnControlsText("Start Controller");
+            model.setBtnControlsText("Start CommandDispatcher");
             setModel(model);
         }
     }

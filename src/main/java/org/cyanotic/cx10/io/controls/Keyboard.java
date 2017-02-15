@@ -10,9 +10,8 @@ import static java.awt.event.KeyEvent.*;
 /**
  * Created by orfeo.ciano on 29/11/2016.
  */
-public class Keyboard implements IController, KeyEventDispatcher {
+public class Keyboard extends AbstractController implements KeyEventDispatcher {
     private final KeyboardFocusManager focusManager;
-    private CommandListener commandListener;
     private Command command = new Command();
 
     public Keyboard(KeyboardFocusManager focusManager) {
@@ -20,19 +19,13 @@ public class Keyboard implements IController, KeyEventDispatcher {
     }
 
     public void start() {
+        // don't call `super.start` because we want the user to decide when to takeoff
         focusManager.addKeyEventDispatcher(this);
     }
 
     public void stop() {
         focusManager.removeKeyEventDispatcher(this);
-    }
-
-    public boolean isAvailable() {
-        return false;
-    }
-
-    public void setListener(CommandListener controlListener) {
-        this.commandListener = controlListener;
+        super.stop();
     }
 
     private void onKeyEvent(KeyEvent e, boolean isPressed) {
@@ -73,8 +66,8 @@ public class Keyboard implements IController, KeyEventDispatcher {
                 newInput = false;
         }
 
-        if (commandListener != null && newInput) {
-            commandListener.onCommandReceived(command);
+        if (newInput) {
+            sendCommand(command);
         }
         e.consume();
     }
@@ -86,5 +79,10 @@ public class Keyboard implements IController, KeyEventDispatcher {
             onKeyEvent(e, false);
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Keyboard";
     }
 }
