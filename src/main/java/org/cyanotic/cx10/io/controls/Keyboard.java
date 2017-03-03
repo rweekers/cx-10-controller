@@ -14,6 +14,10 @@ public class Keyboard extends AbstractController implements KeyEventDispatcher {
     private final KeyboardFocusManager focusManager;
     private Command command = new Command();
 
+    public Keyboard() {
+        this(KeyboardFocusManager.getCurrentKeyboardFocusManager());
+    }
+
     public Keyboard(KeyboardFocusManager focusManager) {
         this.focusManager = focusManager;
     }

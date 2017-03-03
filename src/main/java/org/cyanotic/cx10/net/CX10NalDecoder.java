@@ -27,7 +27,6 @@ public class CX10NalDecoder {
     private Socket socket;
     private boolean savedData = false;
     private boolean initialized = false;
-    private int sequence = 0;
 
     public CX10NalDecoder(String host, int port) throws IOException {
         this.host = host;
@@ -50,7 +49,7 @@ public class CX10NalDecoder {
             initialized = true;
         }
         byte[] nalHeader = readData(10);
-        sequence = nalHeader[5] & 0xFF;
+        int sequence = nalHeader[5] & 0xFF;
         int nalType = nalHeader[3] & 0xFF;
 
         int headerSize;
@@ -136,5 +135,9 @@ public class CX10NalDecoder {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean isConnected() {
+        return socket.isConnected();
     }
 }

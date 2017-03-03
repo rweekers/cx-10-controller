@@ -2,24 +2,6 @@
 
 This is a sample application to control Cheerson CX10-WD drone from desktop using keyboard or code
 
-### Stream/Record Video ###
-
-In order to stream or record video you need to download [FFPLAY and FFMPEG](https://ffmpeg.org/download.html) for your platform and
-put the two binaries (ffmpeg and ffplay) contained in the archive in the same folder of the drone_protocol.jar.
-i.e.
-
-C:\users\sample\Desktop\cx10\ will contain
-* drone_protocol.jar
-* ffmpeg.exe
-* ffplay.exe
-
-or on MacOSX/Linux
-/users/sample/Desktop/cx10/ will contain
-* drone_protocol.jar
-* ffmpeg
-* ffplay
-
-
 ### Keyboard Controls ###
 
 * Up arrow = Take Off

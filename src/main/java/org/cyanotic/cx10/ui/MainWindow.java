@@ -2,71 +2,51 @@ package org.cyanotic.cx10.ui;
 
 import org.cyanotic.cx10.CX10;
 import org.cyanotic.cx10.io.controls.Controller;
+import org.cyanotic.cx10.io.video.IVideoPlayer;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.stream.Stream;
 
 /**
  * Created by orfeo.ciano on 29/11/2016.
  */
-public class MainWindow extends JFrame implements ActionListener {
+public class MainWindow extends JFrame {
     private final CX10 cx10;
 
     private JComboBox<Controller> cmbControllers;
+    private JComboBox<IVideoPlayer> cmbPlayers;
     private JButton btnConnect;
     private JButton btnControls;
     private JButton btnVideo;
-    private JButton btnRecord;
     private JLabel lblStatus;
     private JPanel panel;
 
     private boolean isConnected = false;
-    private boolean isRecording = false;
     private boolean isPlaying = false;
     private boolean isControlled = false;
 
-    public MainWindow(Controller... controllers) {
+    public MainWindow(Controller[] controllers, IVideoPlayer[] players) {
         this.cx10 = new CX10();
 
         Stream.of(controllers).forEach(cmbControllers::addItem);
+        Stream.of(players).forEach(cmbPlayers::addItem);
 
         btnConnect.setEnabled(true);
         btnControls.setEnabled(false);
         btnVideo.setEnabled(false);
-        btnRecord.setEnabled(false);
 
-        btnConnect.addActionListener(this);
-        btnControls.addActionListener(this);
-        btnVideo.addActionListener(this);
-        btnRecord.addActionListener(this);
+        btnConnect.addActionListener(e -> onConnectClicked());
+        btnControls.addActionListener(e -> onControlsClicked());
+        btnVideo.addActionListener(e -> onVideoClicked());
 
         add(panel);
         pack();
         setTitle("CX-10WD CommandDispatcher");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setAlwaysOnTop(true);
         setLocationByPlatform(true);
         panel.setVisible(true);
         setVisible(true);
-    }
-
-    public void actionPerformed(final ActionEvent e) {
-        new Thread(new Runnable() {
-            public void run() {
-                if (e.getSource() == btnConnect) {
-                    onConnectClicked();
-                } else if (e.getSource() == btnControls) {
-                    onControlsClicked();
-                } else if (e.getSource() == btnVideo) {
-                    onStartVideoStreamClicked();
-                } else if (e.getSource() == btnRecord) {
-                    onRecordClicked();
-                }
-            }
-        }).start();
     }
 
     private void onConnectClicked() {
@@ -85,9 +65,7 @@ public class MainWindow extends JFrame implements ActionListener {
                 model = getModel();
                 model.setBtnConnectEnabled(true);
                 model.setBtnConnectText("Disconnect");
-                model.setBtnRecordEnabled(true);
                 model.setBtnVideoEnabled(true);
-                model.setBtnRecordEnabled(true);
                 model.setBtnControlsEnabled(true);
 
                 setModel(model);
@@ -107,9 +85,7 @@ public class MainWindow extends JFrame implements ActionListener {
             model = getModel();
             model.setBtnConnectEnabled(true);
             model.setBtnConnectText("Connect");
-            model.setBtnRecordEnabled(false);
             model.setBtnVideoEnabled(false);
-            model.setBtnRecordEnabled(false);
             model.setBtnControlsEnabled(false);
 
             setModel(model);
@@ -117,89 +93,16 @@ public class MainWindow extends JFrame implements ActionListener {
 
     }
 
-    private void onRecordClicked() {
-        MainWindowModel model;
-        if (!isRecording) {
-            try {
-                model = getModel();
-                model.setBtnRecordText("Init Recording...");
-                model.setBtnRecordEnabled(false);
-                setModel(model);
-
-                cx10.startVideoRecorder();
-                isRecording = true;
-
-                model = getModel();
-                model.setBtnRecordText("Stop Recording");
-                model.setBtnRecordEnabled(true);
-
-                setModel(model);
-            } catch (IOException e) {
-                lblStatus.setText(e.getMessage());
-
-                model = getModel();
-                model.setLblStatusText(e.getMessage());
-                model.setBtnRecordEnabled(true);
-                model.setBtnRecordText("Record Video");
-
-                setModel(model);
-            }
-        } else {
-            cx10.stopVideoRecorder();
-            isRecording = false;
-
-            model = getModel();
-            model.setBtnRecordText("Record Video");
-
-            setModel(model);
-        }
-    }
-
-    private void onStartVideoStreamClicked() {
-        MainWindowModel model;
-        if (!isPlaying) {
-            try {
-                model = getModel();
-                model.setBtnVideoText("Init Video...");
-                model.setBtnVideoEnabled(false);
-                setModel(model);
-
-                cx10.startVideoStream();
-                isPlaying = true;
-
-                model = getModel();
-                model.setBtnVideoText("Stop Video");
-                model.setBtnVideoEnabled(true);
-                setModel(model);
-            } catch (IOException e) {
-                e.printStackTrace();
-                model = getModel();
-                model.setLblStatusText(e.getMessage());
-                model.setBtnVideoEnabled(true);
-                model.setBtnVideoText("Start Video");
-                setModel(model);
-            }
-        } else {
-            cx10.stopVideoStream();
-            isPlaying = false;
-
-            model = getModel();
-            model.setBtnVideoText("Start Video");
-
-            setModel(model);
-        }
-    }
-
     private void onControlsClicked() {
         MainWindowModel model;
         if (!isControlled) {
             try {
                 Controller controller = (Controller) cmbControllers.getSelectedItem();
-                if (controller != null) {
-                    cx10.startControls(controller);
-                } else {
+                if (controller == null) {
                     return;
                 }
+
+                cx10.startControls(controller);
                 isControlled = true;
 
                 model = getModel();
@@ -223,38 +126,71 @@ public class MainWindow extends JFrame implements ActionListener {
         }
     }
 
+    private void onVideoClicked() {
+        MainWindowModel model;
+        if (!isPlaying) {
+            try {
+                IVideoPlayer player = (IVideoPlayer) cmbPlayers.getSelectedItem();
+                if (player == null) {
+                    return;
+                }
+
+                model = getModel();
+                model.setBtnVideoText("Init Video...");
+                model.setBtnVideoEnabled(false);
+                setModel(model);
+
+                cx10.startVideo(player);
+                isPlaying = true;
+
+                model = getModel();
+                model.setBtnVideoText("Stop Video");
+                model.setBtnVideoEnabled(true);
+                setModel(model);
+            } catch (IOException e) {
+                e.printStackTrace();
+                model = getModel();
+                model.setLblStatusText(e.getMessage());
+                model.setBtnVideoEnabled(true);
+                model.setBtnVideoText("Start Video");
+                setModel(model);
+            }
+        } else {
+            cx10.stopVideo();
+            isPlaying = false;
+
+            model = getModel();
+            model.setBtnVideoText("Start Video");
+
+            setModel(model);
+        }
+    }
+
     private MainWindowModel getModel() {
         MainWindowModel model = new MainWindowModel();
         model.setBtnConnectEnabled(btnConnect.isEnabled());
         model.setBtnControlsEnabled(btnControls.isEnabled());
         model.setBtnVideoEnabled(btnVideo.isEnabled());
-        model.setBtnRecordEnabled(btnRecord.isEnabled());
 
         model.setBtnConnectText(btnConnect.getText());
         model.setBtnControlsText(btnControls.getText());
         model.setBtnVideoText(btnVideo.getText());
-        model.setBtnRecordText(btnRecord.getText());
         model.setLblStatusText(lblStatus.getText());
         return model;
     }
 
     private void setModel(final MainWindowModel model) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                btnConnect.setEnabled(model.isBtnConnectEnabled());
-                btnConnect.setText(model.getBtnConnectText());
+        SwingUtilities.invokeLater(() -> {
+            btnConnect.setEnabled(model.isBtnConnectEnabled());
+            btnConnect.setText(model.getBtnConnectText());
 
-                btnControls.setEnabled(model.isBtnControlsEnabled());
-                btnControls.setText(model.getBtnControlsText());
+            btnControls.setEnabled(model.isBtnControlsEnabled());
+            btnControls.setText(model.getBtnControlsText());
 
-                btnVideo.setEnabled(model.isBtnVideoEnabled());
-                btnVideo.setText(model.getBtnVideoText());
+            btnVideo.setEnabled(model.isBtnVideoEnabled());
+            btnVideo.setText(model.getBtnVideoText());
 
-                btnRecord.setEnabled(model.isBtnRecordEnabled());
-                btnRecord.setText(model.getBtnRecordText());
-
-                lblStatus.setText(model.getLblStatusText());
-            }
+            lblStatus.setText(model.getLblStatusText());
         });
     }
 

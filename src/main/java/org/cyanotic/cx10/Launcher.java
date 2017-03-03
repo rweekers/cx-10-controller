@@ -1,10 +1,13 @@
 package org.cyanotic.cx10;
 
+import org.cyanotic.cx10.io.controls.Controller;
 import org.cyanotic.cx10.io.controls.FlyInACircle;
 import org.cyanotic.cx10.io.controls.Keyboard;
+import org.cyanotic.cx10.io.video.IVideoPlayer;
+import org.cyanotic.cx10.io.video.SwingVideoPlayer;
+import org.cyanotic.cx10.io.video.VideoRecorder;
 import org.cyanotic.cx10.ui.MainWindow;
 
-import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -12,7 +15,9 @@ import java.io.IOException;
  */
 public class Launcher {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        new MainWindow(new Keyboard(KeyboardFocusManager.getCurrentKeyboardFocusManager()), new FlyInACircle());
+    public static void main(String[] args) throws IOException {
+        Controller[] controllers = {new Keyboard(), new FlyInACircle()};
+        IVideoPlayer[] players = {new SwingVideoPlayer(), new VideoRecorder()};
+        new MainWindow(controllers, players);
     }
 }
