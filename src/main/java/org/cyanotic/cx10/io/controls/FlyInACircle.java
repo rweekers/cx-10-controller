@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 public class FlyInACircle extends AbstractController {
 
     private static final ScheduledExecutorService SCHEDULER = Executors.newSingleThreadScheduledExecutor();
-    private static final Command COMMAND = new Command(1, 0, 0, 1);
+    private static final Command COMMAND = new Command(0, 50, 0, 1);
 
     private ScheduledFuture future;
 
@@ -23,11 +23,6 @@ public class FlyInACircle extends AbstractController {
     @Override
     public void stop() {
         future.cancel(false);
-        try {
-            future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
         super.stop();
     }
 
