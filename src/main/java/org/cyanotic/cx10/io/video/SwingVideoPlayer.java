@@ -7,6 +7,7 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -23,6 +24,7 @@ public class SwingVideoPlayer implements IVideoPlayer {
     private final Java2DFrameConverter converter = new Java2DFrameConverter();
     private final AtomicLong framesGrabbed = new AtomicLong();
     private final AtomicLong framesProcessed = new AtomicLong();
+    private final AtomicLong framesDropped = new AtomicLong();
     private final AtomicBoolean isProcessing = new AtomicBoolean();
     private CanvasFrame canvasFrame;
     private ScheduledFuture fpsPrintFuture;
@@ -32,7 +34,7 @@ public class SwingVideoPlayer implements IVideoPlayer {
 
     @Override
     public void start() {
-        fpsPrintFuture = SCHEDULER.scheduleAtFixedRate(this::printFPS, 1, 1, TimeUnit.SECONDS);
+        fpsPrintFuture = SCHEDULER.scheduleAtFixedRate(this::printStats, 1, 1, TimeUnit.SECONDS);
         canvasFrame = new CanvasFrame("Swing video");
         canvasFrame.setSize(720, 576);
     }
@@ -60,6 +62,8 @@ public class SwingVideoPlayer implements IVideoPlayer {
                 framesProcessed.incrementAndGet();
                 isProcessing.set(false);
             });
+        } else {
+            framesDropped.incrementAndGet();
         }
     }
 
@@ -68,7 +72,12 @@ public class SwingVideoPlayer implements IVideoPlayer {
         return "SwingVideoPlayer";
     }
 
-    private void printFPS() {
-        System.out.println("FPS: " + framesGrabbed.getAndSet(0) + " (grabbed), " + framesProcessed.getAndSet(0) + " (processed)");
+    private void printStats() {
+        StringWriter writer = new StringWriter();
+        writer.append("Swing video player stats\n");
+        writer.append("FPS: ").append(String.valueOf(framesGrabbed.getAndSet(0))).append(" (grabbed)").append('\n');
+        writer.append("FPS: ").append(String.valueOf(framesProcessed.getAndSet(0))).append(" (processed)").append('\n');
+        writer.append("Frames not processed: ").append(String.valueOf(framesDropped.get())).append('\n');
+        System.out.println(writer.toString());
     }
 }
