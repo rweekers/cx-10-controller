@@ -96,15 +96,19 @@ public class CX10 {
                     if (frame != null && currentPlayer != null && currentPlayer.isActive()) {
                         currentPlayer.imageReceived(frame);
                     } else {
-                        decoder.disconnect();
+                        decoder.close();
                     }
                 } catch (IOException e) {
                     error = true;
                     e.printStackTrace();
-                    decoder.disconnect();
                 }
             }
+            try {
+                decoder.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             decoder = null;
-        }).start();
+        }, decoder.toString()).start();
     }
 }

@@ -102,11 +102,16 @@ public class MainWindow extends JFrame {
                     return;
                 }
 
+                model = getModel();
+                model.setBtnVideoText("Init Controller...");
+                model.setBtnVideoEnabled(false);
+                setModel(model);
+
                 cx10.startControls(controller);
                 isControlled = true;
 
                 model = getModel();
-                model.setBtnControlsText("Stop CommandDispatcher");
+                model.setBtnControlsText("Stop Controller");
                 setModel(model);
 
             } catch (IOException e) {
@@ -121,7 +126,7 @@ public class MainWindow extends JFrame {
             isControlled = false;
 
             model = getModel();
-            model.setBtnControlsText("Start CommandDispatcher");
+            model.setBtnControlsText("Start Controller");
             setModel(model);
         }
     }

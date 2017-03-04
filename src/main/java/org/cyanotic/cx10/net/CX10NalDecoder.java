@@ -2,7 +2,10 @@ package org.cyanotic.cx10.net;
 
 import org.cyanotic.cx10.utils.ByteUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -10,9 +13,9 @@ import java.nio.ByteBuffer;
 /**
  * Created by cyanotic on 27/11/2016.
  */
-public class CX10NalDecoder {
+public class CX10NalDecoder extends InputStream {
 
-    private static byte[] ph = ByteUtils.asUnsigned(
+    private byte[] ph = ByteUtils.asUnsigned(
             0x00, 0x00, 0x00, 0x19, 0xD0,
             0x02, 0x40, 0x02, 0x00, 0xBF,
             0x8A, 0x00, 0x01, 0x5D, 0x03,
@@ -25,8 +28,10 @@ public class CX10NalDecoder {
     private InputStream inputStream;
     private OutputStream outputStream;
     private Socket socket;
+    private ByteArrayInputStream buffer;
     private boolean savedData = false;
     private boolean initialized = false;
+    private boolean closed = false;
 
     public CX10NalDecoder(String host, int port) throws IOException {
         this.host = host;
@@ -34,19 +39,51 @@ public class CX10NalDecoder {
     }
 
     public void connect() throws IOException {
+        if (closed) {
+            throw new IOException("Already closed!");
+        }
+        if (isConnected()) {
+            throw new IOException("Already connected");
+        }
         InetAddress address = InetAddress.getByName(host);
         socket = new Socket(address, port);
-        outputStream = new DataOutputStream(socket.getOutputStream());
-        inputStream = new DataInputStream(socket.getInputStream());
+        outputStream = socket.getOutputStream();
+        inputStream = socket.getInputStream();
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Not connected");
+        }
+        if (closed) {
+            throw new IOException("Already closed!");
+        }
+        closed = true;
+        outputStream.close();
+        inputStream.close();
+        socket.close();
+    }
+
+    public boolean isConnected() {
+        return socket != null && socket.isConnected();
+    }
+
+    @Override
+    public int read() throws IOException {
+        if (buffer == null || buffer.available() == 0) {
+            buffer = new ByteArrayInputStream(readNal());
+        }
+        return buffer.read();
     }
 
     public byte[] readNal() throws IOException {
         if (!initialized) {
+            initialized = true;
             byte[] bytes = ByteUtils.loadMessageFromFile("video.bin");
             outputStream.write(bytes);
             byte[] response = new byte[106];
             inputStream.read(response);
-            initialized = true;
         }
         byte[] nalHeader = readData(10);
         int sequence = nalHeader[5] & 0xFF;
@@ -125,19 +162,5 @@ public class CX10NalDecoder {
             read += lastRead;
         }
         return byteBuffer.array();
-    }
-
-    public void disconnect() {
-        try {
-            outputStream.close();
-            inputStream.close();
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean isConnected() {
-        return socket.isConnected();
     }
 }

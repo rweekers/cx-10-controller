@@ -7,7 +7,6 @@ import org.bytedeco.javacv.FrameGrabber;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Video format:
@@ -17,13 +16,13 @@ public class H264Decoder {
     private final CX10NalDecoder cx10NalDecoder;
     private final PipedOutputStream outputStream;
     private final FrameGrabber grabber;
-    private final AtomicBoolean grabberIntialized;
+    private boolean initialized = false;
+    private boolean closed = false;
 
     public H264Decoder(CX10NalDecoder cx10NalDecoder) throws IOException {
         this.cx10NalDecoder = cx10NalDecoder;
         this.outputStream = new PipedOutputStream();
         this.grabber = new FFmpegFrameGrabber(new PipedInputStream(outputStream));
-        this.grabberIntialized = new AtomicBoolean();
     }
 
     public boolean isConnected() {
@@ -31,6 +30,12 @@ public class H264Decoder {
     }
 
     public void connect() throws IOException {
+        if (closed) {
+            throw new IOException("Already closed!");
+        }
+        if (isConnected()) {
+            throw new IOException("Already connected");
+        }
         cx10NalDecoder.connect();
         new Thread(() -> {
             boolean error = false;
@@ -45,26 +50,32 @@ public class H264Decoder {
                     e.printStackTrace();
                 }
             }
-            disconnect();
-        }).start();
-    }
-
-    public void disconnect() {
-        cx10NalDecoder.disconnect();
-        if (grabberIntialized.compareAndSet(true, false)) {
             try {
-                grabber.stop();
-            } catch (FrameGrabber.Exception e) {
+                close();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
+        }, cx10NalDecoder.toString()).start();
+    }
+
+    public void close() throws IOException {
+        if (!isConnected()) {
+            throw new IOException("Not connected");
         }
+        if (closed) {
+            throw new IOException("Already closed!");
+        }
+        closed = true;
+        cx10NalDecoder.close();
+        grabber.close();
     }
 
     public Frame readFrame() throws FrameGrabber.Exception {
         if (!isConnected()) {
             return null;
         }
-        if (grabberIntialized.compareAndSet(false, true)) {
+        if (!initialized) {
+            initialized = true;
             grabber.start();
         }
         return grabber.grab();
