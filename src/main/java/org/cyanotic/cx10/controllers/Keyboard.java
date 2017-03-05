@@ -1,6 +1,7 @@
-package org.cyanotic.cx10.io.controls;
+package org.cyanotic.cx10.controllers;
 
-import org.cyanotic.cx10.model.Command;
+import org.cyanotic.cx10.api.Command;
+import org.cyanotic.cx10.api.Controller;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
@@ -10,9 +11,9 @@ import static java.awt.event.KeyEvent.*;
 /**
  * Created by orfeo.ciano on 29/11/2016.
  */
-public class Keyboard extends AbstractController implements KeyEventDispatcher {
+public class Keyboard implements KeyEventDispatcher, Controller {
     private final KeyboardFocusManager focusManager;
-    private Command command = new Command();
+    private final Command command = new Command();
 
     public Keyboard() {
         this(KeyboardFocusManager.getCurrentKeyboardFocusManager());
@@ -20,21 +21,31 @@ public class Keyboard extends AbstractController implements KeyEventDispatcher {
 
     public Keyboard(KeyboardFocusManager focusManager) {
         this.focusManager = focusManager;
-    }
-
-    public void start() {
-        // don't call `super.start` because we want the user to decide when to takeoff
         focusManager.addKeyEventDispatcher(this);
     }
 
-    public void stop() {
+    @Override
+    public void close() {
         focusManager.removeKeyEventDispatcher(this);
-        super.stop();
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        if (e.getID() == KEY_PRESSED) {
+            onKeyEvent(e, true);
+        } else if (e.getID() == KEY_RELEASED) {
+            onKeyEvent(e, false);
+        }
+        return false;
+    }
+
+    @Override
+    public Command getCommand() {
+        return command;
     }
 
     private void onKeyEvent(KeyEvent e, boolean isPressed) {
         int value = isPressed ? 127 : 0;
-        boolean newInput = true;
         switch (e.getKeyCode()) {
             case VK_W:
                 command.setThrottle(value);
@@ -66,27 +77,7 @@ public class Keyboard extends AbstractController implements KeyEventDispatcher {
             case VK_DOWN:
                 command.setLand(isPressed);
                 break;
-            default:
-                newInput = false;
-        }
-
-        if (newInput) {
-            sendCommand(command);
         }
         e.consume();
-    }
-
-    public boolean dispatchKeyEvent(KeyEvent e) {
-        if (e.getID() == KEY_PRESSED) {
-            onKeyEvent(e, true);
-        } else if (e.getID() == KEY_RELEASED) {
-            onKeyEvent(e, false);
-        }
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return "Keyboard";
     }
 }

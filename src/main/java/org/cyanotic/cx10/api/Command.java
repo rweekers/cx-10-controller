@@ -1,4 +1,4 @@
-package org.cyanotic.cx10.model;
+package org.cyanotic.cx10.api;
 
 /**
  * Created by cyanotic on 19/11/2016.
@@ -13,14 +13,16 @@ public class Command {
     private boolean land;
 
     public Command() {
-        this(0, 0, 0, 0);
+        this(0, 0, 0, 0, false, false);
     }
 
-    public Command(int pitch, int yaw, int roll, int throttle) {
+    public Command(int pitch, int yaw, int roll, int throttle, boolean takeOff, boolean land) {
         this.pitch = pitch;
         this.yaw = yaw;
-        this.throttle = throttle;
         this.roll = roll;
+        this.throttle = throttle;
+        this.takeOff = takeOff;
+        this.land = land;
     }
 
     public int getPitch() {

@@ -11,47 +11,26 @@ import java.net.Socket;
 /**
  * Created by orfeo.ciano on 18/11/2016.
  */
-public class TransportConnection {
+public class TransportConnection implements AutoCloseable {
 
-    private final String host;
-    private final int port;
-    Socket socket;
-    private String name;
+    private final Socket socket;
 
-    public TransportConnection(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
-
-    public void connect() throws IOException {
-        if (socket != null && socket.isConnected()) {
-            System.err.println("The socket is already open and connected");
-            return;
-        }
-
+    public TransportConnection(String host, int port) throws IOException {
         InetAddress address = InetAddress.getByName(host);
         socket = new Socket(address, port);
     }
 
-    public void setName(String name){
-        this.name = name;
-    }
-
-    public void disconnect() throws IOException {
-        if (socket != null && !socket.isClosed()) {
-            socket.close();
-        }
+    public void close() throws IOException {
+        socket.close();
     }
 
     public void sendMessage(byte[] bytes, int responseSize) throws IOException {
-        System.out.println(name + " >>> ");
         System.out.println(ByteUtils.bytesToHex(bytes));
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         output.write(bytes);
         byte[] buffer = new byte[responseSize];
         DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         dataInputStream.read(buffer);
-        System.out.println(name + " <<< ");
         System.out.println(ByteUtils.bytesToHex(buffer));
     }
 }

@@ -1,8 +1,7 @@
-package org.cyanotic.cx10.net;
+package org.cyanotic.cx10.net.decoder;
 
 import org.cyanotic.cx10.utils.ByteUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,9 +12,9 @@ import java.nio.ByteBuffer;
 /**
  * Created by cyanotic on 27/11/2016.
  */
-public class CX10NalDecoder extends InputStream {
+public class CX10NalDecoder implements AutoCloseable {
 
-    private byte[] ph = ByteUtils.asUnsigned(
+    private final byte[] ph = ByteUtils.asUnsigned(
             0x00, 0x00, 0x00, 0x19, 0xD0,
             0x02, 0x40, 0x02, 0x00, 0xBF,
             0x8A, 0x00, 0x01, 0x5D, 0x03,
@@ -23,28 +22,14 @@ public class CX10NalDecoder extends InputStream {
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00);
-    private final String host;
-    private final int port;
-    private InputStream inputStream;
-    private OutputStream outputStream;
-    private Socket socket;
-    private ByteArrayInputStream buffer;
+    private final Socket socket;
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
     private boolean savedData = false;
     private boolean initialized = false;
     private boolean closed = false;
 
     public CX10NalDecoder(String host, int port) throws IOException {
-        this.host = host;
-        this.port = port;
-    }
-
-    public void connect() throws IOException {
-        if (closed) {
-            throw new IOException("Already closed!");
-        }
-        if (isConnected()) {
-            throw new IOException("Already connected");
-        }
         InetAddress address = InetAddress.getByName(host);
         socket = new Socket(address, port);
         outputStream = socket.getOutputStream();
@@ -67,14 +52,6 @@ public class CX10NalDecoder extends InputStream {
 
     public boolean isConnected() {
         return socket != null && socket.isConnected();
-    }
-
-    @Override
-    public int read() throws IOException {
-        if (buffer == null || buffer.available() == 0) {
-            buffer = new ByteArrayInputStream(readNal());
-        }
-        return buffer.read();
     }
 
     public byte[] readNal() throws IOException {

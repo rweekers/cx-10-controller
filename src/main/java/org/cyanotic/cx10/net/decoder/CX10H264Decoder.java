@@ -1,4 +1,4 @@
-package org.cyanotic.cx10.net;
+package org.cyanotic.cx10.net.decoder;
 
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -15,28 +15,15 @@ import java.net.Socket;
  * Video format:
  * Stream #0:0: Video: h264 (Main), yuv420p(progressive), 720x576, 25 fps, 25 tbr, 1200k tbn, 50 tbc
  */
-public class CX10H264Decoder {
-    private final String host;
-    private final int port;
-    private Socket socket;
-    private InputStream inputStream;
-    private OutputStream outputStream;
-    private FrameGrabber grabber;
+public class CX10H264Decoder implements AutoCloseable {
+    private final Socket socket;
+    private final InputStream inputStream;
+    private final OutputStream outputStream;
+    private final FrameGrabber grabber;
     private boolean initialized = false;
     private boolean closed = false;
 
     public CX10H264Decoder(String host, int port) throws IOException {
-        this.host = host;
-        this.port = port;
-    }
-
-    public void connect() throws IOException {
-        if (closed) {
-            throw new IOException("Already closed!");
-        }
-        if (isConnected()) {
-            throw new IOException("Already connected");
-        }
         InetAddress address = InetAddress.getByName(host);
         socket = new Socket(address, port);
         outputStream = socket.getOutputStream();
@@ -44,6 +31,7 @@ public class CX10H264Decoder {
         grabber = new FFmpegFrameGrabber(inputStream);
     }
 
+    @Override
     public void close() throws IOException {
         if (!isConnected()) {
             throw new IOException("Not connected");
