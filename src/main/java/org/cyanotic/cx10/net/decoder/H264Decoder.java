@@ -1,8 +1,9 @@
-package org.cyanotic.cx10.net;
+package org.cyanotic.cx10.net.decoder;
 
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
+import org.cyanotic.cx10.utils.ExecutorUtils;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -12,7 +13,7 @@ import java.io.PipedOutputStream;
  * Video format:
  * Stream #0:0: Video: h264 (Main), yuv420p(progressive), 720x576, 25 fps, 25 tbr, 1200k tbn, 50 tbc
  */
-public class H264Decoder {
+public class H264Decoder implements AutoCloseable {
     private final CX10NalDecoder cx10NalDecoder;
     private final PipedOutputStream outputStream;
     private final FrameGrabber grabber;
@@ -23,41 +24,22 @@ public class H264Decoder {
         this.cx10NalDecoder = cx10NalDecoder;
         this.outputStream = new PipedOutputStream();
         this.grabber = new FFmpegFrameGrabber(new PipedInputStream(outputStream));
-    }
-
-    public boolean isConnected() {
-        return cx10NalDecoder.isConnected();
-    }
-
-    public void connect() throws IOException {
-        if (closed) {
-            throw new IOException("Already closed!");
-        }
-        if (isConnected()) {
-            throw new IOException("Already connected");
-        }
-        cx10NalDecoder.connect();
-        new Thread(() -> {
-            boolean error = false;
-            while (isConnected() && !error) {
-                try {
+        ExecutorUtils.scheduleVideoDecoder(() -> {
+            try {
+                while (isConnected()) {
                     final byte[] data = cx10NalDecoder.readNal();
                     if (data != null) {
                         outputStream.write(data);
                     }
-                } catch (IOException e) {
-                    error = true;
-                    e.printStackTrace();
                 }
-            }
-            try {
                 close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }, cx10NalDecoder.toString()).start();
+        }).start();
     }
 
+    @Override
     public void close() throws IOException {
         if (!isConnected()) {
             throw new IOException("Not connected");
@@ -68,6 +50,10 @@ public class H264Decoder {
         closed = true;
         cx10NalDecoder.close();
         grabber.close();
+    }
+
+    public boolean isConnected() {
+        return cx10NalDecoder.isConnected();
     }
 
     public Frame readFrame() throws FrameGrabber.Exception {

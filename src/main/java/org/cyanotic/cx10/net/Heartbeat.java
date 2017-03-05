@@ -8,42 +8,26 @@ import java.net.Socket;
 /**
  * Created by cyanotic on 19/11/2016.
  */
-public class Heartbeat extends Thread {
+public class Heartbeat implements AutoCloseable, Runnable {
 
-    private final String host;
-    private final int port;
+    private final Socket socket;
 
-    private Socket socket;
-
-    public Heartbeat(String host, int port) {
-        this.host = host;
-        this.port = port;
+    public Heartbeat(String host, int port) throws IOException {
+        socket = new Socket(host, port);
     }
 
     @Override
-    public synchronized void start() {
-        try {
-            socket = new Socket(host, port);
-            super.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Connection failed");
-        }
+    public void close() throws IOException {
+        socket.close();
     }
 
     @Override
     public void run() {
-        while (!isInterrupted()) {
-            try {
-                sendHeartBeat();
-                Thread.sleep(5000);
-            } catch (IOException e) {
-                System.err.println("Unable to send heartbeat");
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                System.err.println("Heartbeat interrupted");
-                e.printStackTrace();
-            }
+        try {
+            sendHeartBeat();
+        } catch (IOException e) {
+            System.err.println("Unable to send heartbeat");
+            e.printStackTrace();
         }
     }
 

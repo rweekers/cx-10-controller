@@ -1,6 +1,6 @@
 package org.cyanotic.cx10.net;
 
-import org.cyanotic.cx10.model.Command;
+import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.utils.ByteUtils;
 
 import java.io.IOException;
@@ -11,24 +11,29 @@ import java.net.InetAddress;
 /**
  * Created by cyanotic on 19/11/2016.
  */
-public class CommandConnection {
+public class CommandConnection implements AutoCloseable {
 
     private final DatagramSocket socket;
-    private final int port;
     private final InetAddress host;
+    private final int port;
 
     public CommandConnection(String host, int port) throws IOException {
-        this.port = port;
         this.host = InetAddress.getByName(host);
-        socket = new DatagramSocket();
+        this.port = port;
+        this.socket = new DatagramSocket();
     }
 
-    public static final byte checksum(byte[] bytes) {
+    private static byte checksum(byte[] bytes) {
         byte sum = 0;
         for (byte b : bytes) {
             sum ^= b;
         }
         return sum;
+    }
+
+    @Override
+    public void close() throws IOException {
+        socket.close();
     }
 
     public void sendCommand(Command command) {
@@ -71,5 +76,4 @@ public class CommandConnection {
         //System.out.println(ByteUtils.bytesToHex(data));
         return data;
     }
-
 }
