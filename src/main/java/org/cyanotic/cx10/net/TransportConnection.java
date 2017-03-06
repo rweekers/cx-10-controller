@@ -2,35 +2,25 @@ package org.cyanotic.cx10.net;
 
 import org.cyanotic.cx10.utils.ByteUtils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
 
 /**
  * Created by orfeo.ciano on 18/11/2016.
  */
-public class TransportConnection implements AutoCloseable {
-
-    private final Socket socket;
+public class TransportConnection extends AbstractTCPConnection {
 
     public TransportConnection(String host, int port) throws IOException {
-        InetAddress address = InetAddress.getByName(host);
-        socket = new Socket(address, port);
+        super(host, port);
+        initialize();
     }
 
-    public void close() throws IOException {
-        socket.close();
-    }
-
-    public void sendMessage(byte[] bytes, int responseSize) throws IOException {
-        System.out.println(ByteUtils.bytesToHex(bytes));
-        DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-        output.write(bytes);
-        byte[] buffer = new byte[responseSize];
-        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
-        dataInputStream.read(buffer);
-        System.out.println(ByteUtils.bytesToHex(buffer));
+    private void initialize() throws IOException {
+        logger.info("Initializing CX10...");
+        sendMessage(ByteUtils.loadMessageFromFile("message1.bin"), 106);
+        sendMessage(ByteUtils.loadMessageFromFile("message2.bin"), 106);
+        sendMessage(ByteUtils.loadMessageFromFile("message3.bin"), 170);
+        sendMessage(ByteUtils.loadMessageFromFile("message4.bin"), 106);
+        sendMessage(ByteUtils.loadMessageFromFile("message5.bin"), 106);
+        logger.info("CX10 initialized");
     }
 }

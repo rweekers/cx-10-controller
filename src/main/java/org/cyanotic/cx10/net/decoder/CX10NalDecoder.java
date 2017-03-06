@@ -1,12 +1,11 @@
 package org.cyanotic.cx10.net.decoder;
 
+import org.cyanotic.cx10.net.VideoConnection;
 import org.cyanotic.cx10.utils.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 
 /**
@@ -14,6 +13,7 @@ import java.nio.ByteBuffer;
  */
 public class CX10NalDecoder implements AutoCloseable {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final byte[] ph = ByteUtils.asUnsigned(
             0x00, 0x00, 0x00, 0x19, 0xD0,
             0x02, 0x40, 0x02, 0x00, 0xBF,
@@ -22,46 +22,23 @@ public class CX10NalDecoder implements AutoCloseable {
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00);
-    private final Socket socket;
-    private final InputStream inputStream;
-    private final OutputStream outputStream;
+    private final VideoConnection videoConnection;
     private boolean savedData = false;
-    private boolean initialized = false;
-    private boolean closed = false;
 
-    public CX10NalDecoder(String host, int port) throws IOException {
-        InetAddress address = InetAddress.getByName(host);
-        socket = new Socket(address, port);
-        outputStream = socket.getOutputStream();
-        inputStream = socket.getInputStream();
+    public CX10NalDecoder(VideoConnection videoConnection) throws IOException {
+        this.videoConnection = videoConnection;
     }
 
     @Override
     public void close() throws IOException {
-        if (!isConnected()) {
-            throw new IOException("Not connected");
-        }
-        if (closed) {
-            throw new IOException("Already closed!");
-        }
-        closed = true;
-        outputStream.close();
-        inputStream.close();
-        socket.close();
+        videoConnection.close();
     }
 
     public boolean isConnected() {
-        return socket != null && socket.isConnected();
+        return videoConnection.isConnected();
     }
 
     public byte[] readNal() throws IOException {
-        if (!initialized) {
-            initialized = true;
-            byte[] bytes = ByteUtils.loadMessageFromFile("video.bin");
-            outputStream.write(bytes);
-            byte[] response = new byte[106];
-            inputStream.read(response);
-        }
         byte[] nalHeader = readData(10);
         int sequence = nalHeader[5] & 0xFF;
         int nalType = nalHeader[3] & 0xFF;
@@ -77,7 +54,7 @@ public class CX10NalDecoder implements AutoCloseable {
                 headerSize = 2;
                 break;
             default:
-                System.err.println("Unknown header type " + headerType);
+                logger.error("Unknown header type " + headerType);
                 return null;
 
         }
@@ -86,7 +63,7 @@ public class CX10NalDecoder implements AutoCloseable {
         byte[] fullNalHeader = new byte[headerSize + nalHeader.length];
         System.arraycopy(nalHeader, 0, fullNalHeader, 0, nalHeader.length);
 
-        inputStream.read(fullNalHeader, 10, headerSize);
+        videoConnection.getInputStream().read(fullNalHeader, 10, headerSize);
         if (nalType == 0xA0 && headerType == 0x03) {
             byte[] newHeader = replaceA003(fullNalHeader);
             byte[] data = readData(dataLength);
@@ -134,7 +111,7 @@ public class CX10NalDecoder implements AutoCloseable {
         ByteBuffer byteBuffer = ByteBuffer.allocate(length);
         while (read < length) {
             byte[] buffer = new byte[length - read];
-            int lastRead = inputStream.read(buffer);
+            int lastRead = videoConnection.getInputStream().read(buffer);
             byteBuffer.put(buffer, 0, lastRead);
             read += lastRead;
         }

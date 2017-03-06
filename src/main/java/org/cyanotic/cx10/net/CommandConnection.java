@@ -2,25 +2,20 @@ package org.cyanotic.cx10.net;
 
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.utils.ByteUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 /**
  * Created by cyanotic on 19/11/2016.
  */
-public class CommandConnection implements AutoCloseable {
+public class CommandConnection extends AbstractUDPConnection {
 
-    private final DatagramSocket socket;
-    private final InetAddress host;
-    private final int port;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public CommandConnection(String host, int port) throws IOException {
-        this.host = InetAddress.getByName(host);
-        this.port = port;
-        this.socket = new DatagramSocket();
+        super(host, port);
     }
 
     private static byte checksum(byte[] bytes) {
@@ -31,21 +26,8 @@ public class CommandConnection implements AutoCloseable {
         return sum;
     }
 
-    @Override
-    public void close() throws IOException {
-        socket.close();
-    }
-
     public void sendCommand(Command command) {
-        byte[] data = asByteArray(command);
-        //System.out.println(bytesToHex(data));
-        DatagramPacket packet = new DatagramPacket(data, 0, data.length, host, port);
-        try {
-            socket.send(packet);
-        } catch (IOException e) {
-            System.err.println("Unable to send packet: ");
-            e.printStackTrace();
-        }
+        sendMessage(asByteArray(command));
     }
 
     private byte[] asByteArray(Command command) {
@@ -73,7 +55,6 @@ public class CommandConnection implements AutoCloseable {
         data[6] = checksum(ByteUtils.asUnsigned(data[1], data[2], data[3], data[4], data[5]));
 
         data[7] = (byte) 0x33;
-        //System.out.println(ByteUtils.bytesToHex(data));
         return data;
     }
 }

@@ -2,59 +2,34 @@ package org.cyanotic.cx10;
 
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.api.FrameListener;
-import org.cyanotic.cx10.net.CommandConnection;
-import org.cyanotic.cx10.net.Heartbeat;
-import org.cyanotic.cx10.net.TransportConnection;
+import org.cyanotic.cx10.net.*;
+import org.cyanotic.cx10.net.decoder.CX10NalDecoder;
 import org.cyanotic.cx10.net.decoder.FrameDecoder;
-import org.cyanotic.cx10.utils.ByteUtils;
-import org.cyanotic.cx10.utils.ExecutorUtils;
-
-import java.util.concurrent.ScheduledFuture;
+import org.cyanotic.cx10.net.decoder.H264Decoder;
 
 /**
  * Created by cyanotic on 28/11/2016.
  */
 public class CX10 implements AutoCloseable {
-    public static final String HOST = "172.16.10.1";
+    private static final String HOST = "172.16.10.1";
+    private static final int TRANSPORT_PORT = 8888;
+    private static final int COMMAND_PORT = 8895;
 
-    private final Controller controller;
-    private final FrameListener frameListener;
-    private final TransportConnection transportConnection;
-    private final CommandConnection commandConnection;
     private final Heartbeat heartbeat;
+    private final CommandDispatcher commandDispatcher;
     private final FrameDecoder decoder;
-    private final ScheduledFuture heartbeatFuture;
-    private final ScheduledFuture controllerFuture;
-    private final ScheduledFuture printStatsFuture;
 
     public CX10(Controller controller, FrameListener frameListener) throws Exception {
-        transportConnection = new TransportConnection(HOST, 8888);
-        transportConnection.sendMessage(ByteUtils.loadMessageFromFile("message1.bin"), 106);
-        transportConnection.sendMessage(ByteUtils.loadMessageFromFile("message2.bin"), 106);
-        transportConnection.sendMessage(ByteUtils.loadMessageFromFile("message3.bin"), 170);
-        transportConnection.sendMessage(ByteUtils.loadMessageFromFile("message4.bin"), 106);
-        transportConnection.sendMessage(ByteUtils.loadMessageFromFile("message5.bin"), 106);
-        commandConnection = new CommandConnection(HOST, 8895);
-        heartbeat = new Heartbeat(HOST, 8888);
-        heartbeatFuture = ExecutorUtils.scheduleHeartbeat(heartbeat);
-        this.controller = controller;
-        controllerFuture = ExecutorUtils.scheduleControllerDispatcher(() -> commandConnection.sendCommand(controller.getCommand()));
-        this.frameListener = frameListener;
-        decoder = new FrameDecoder(HOST, 8888, frameListener);
-        printStatsFuture = ExecutorUtils.schedulePrintVideoStats(decoder::printStats);
+        heartbeat = new Heartbeat(new TransportConnection(HOST, TRANSPORT_PORT));
+        commandDispatcher = new CommandDispatcher(new CommandConnection(HOST, COMMAND_PORT), controller);
+        decoder = new FrameDecoder(new H264Decoder(new CX10NalDecoder(new VideoConnection(HOST, TRANSPORT_PORT))), frameListener);
     }
 
     @Override
     public void close() throws Exception {
-        printStatsFuture.cancel(false);
         decoder.close();
-        frameListener.close();
-        controllerFuture.cancel(false);
-        controller.close();
-        heartbeatFuture.cancel(false);
+        commandDispatcher.close();
         heartbeat.close();
-        commandConnection.close();
-        transportConnection.close();
     }
 
 }

@@ -3,64 +3,61 @@ package org.cyanotic.cx10.net.decoder;
 import org.bytedeco.javacv.Frame;
 import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.utils.ExecutorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by gerard on 5-3-17.
  */
 public class FrameDecoder implements AutoCloseable {
-    private static final int DURATION_THRESHOLD = 1000 / 25;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final H264Decoder h264Decoder;
-    private final AtomicBoolean isProcessing = new AtomicBoolean();
+    private final FrameListener frameListener;
     private final AtomicLong framesGrabbed = new AtomicLong();
     private final AtomicLong framesProcessed = new AtomicLong();
     private final AtomicLong framesDropped = new AtomicLong();
+    private final ScheduledFuture<?> printStatsFuture;
 
-    public FrameDecoder(String host, int port, FrameListener frameListener) throws IOException {
-        h264Decoder = new H264Decoder(new CX10NalDecoder(host, port));
-        ExecutorUtils.scheduleVideoDecoder(() -> {
-            try {
-                while (h264Decoder.isConnected()) {
-                    final Frame frame = h264Decoder.readFrame();
-                    if (frame != null) {
-                        framesGrabbed.incrementAndGet();
-                        if (isProcessing.compareAndSet(false, true)) {
-                            Instant before = Instant.now();
-                            frameListener.frameReceived(frame);
-                            long duration = Duration.between(before, Instant.now()).toMillis();
-                            if (duration > DURATION_THRESHOLD) {
-                                System.out.println("Processing took " + duration + " ms!");
-                            }
-                            framesProcessed.incrementAndGet();
-                            isProcessing.set(false);
-                        } else {
-                            framesDropped.incrementAndGet();
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
+    public FrameDecoder(H264Decoder h264Decoder, FrameListener frameListener) throws IOException {
+        this.h264Decoder = h264Decoder;
+        this.frameListener = frameListener;
+        this.printStatsFuture = ExecutorUtils.schedulePrintVideoStats(this::printStats);
+        ExecutorUtils.scheduleVideoDecoder(this::decodeFrame).start();
     }
 
     @Override
     public void close() throws Exception {
+        printStatsFuture.cancel(false);
         h264Decoder.close();
+        frameListener.close();
     }
 
-    public void printStats() {
-        StringWriter writer = new StringWriter();
-        writer.append("Video player stats\n");
-        writer.append("FPS: ").append(String.valueOf(framesGrabbed.getAndSet(0))).append(" (grabbed)").append('\n');
-        writer.append("FPS: ").append(String.valueOf(framesProcessed.getAndSet(0))).append(" (processed)").append('\n');
-        writer.append("Frames not processed: ").append(String.valueOf(framesDropped.get())).append('\n');
-        System.out.println(writer.toString());
+    private void decodeFrame() {
+        try {
+            while (h264Decoder.isConnected()) {
+                final Frame frame = h264Decoder.readFrame();
+                if (frame != null) {
+                    framesGrabbed.incrementAndGet();
+                    if (frameListener.isAvailable()) {
+                        frameListener.frameReceived(frame);
+                        framesProcessed.incrementAndGet();
+                    } else {
+                        framesDropped.incrementAndGet();
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Failed to grab frame", e);
+        }
+    }
+
+    private void printStats() {
+        logger.info("FPS: {} (grabbed)", framesGrabbed.getAndSet(0));
+        logger.info("FPS: {} (processed}", framesProcessed.getAndSet(0));
+        logger.info("Frames not processed: {}", framesDropped.get());
     }
 }

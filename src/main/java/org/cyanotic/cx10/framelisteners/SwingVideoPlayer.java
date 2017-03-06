@@ -29,7 +29,7 @@ public class SwingVideoPlayer extends ImageListener {
         try {
             SwingUtilities.invokeAndWait(() -> canvasFrame.showImage(image));
         } catch (InterruptedException | InvocationTargetException e) {
-            e.printStackTrace();
+            logger.error("Failed to draw image", e);
         }
     }
 

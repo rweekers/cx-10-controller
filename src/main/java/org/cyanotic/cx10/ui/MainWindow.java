@@ -3,6 +3,8 @@ package org.cyanotic.cx10.ui;
 import org.cyanotic.cx10.CX10;
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.api.FrameListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.Collection;
@@ -12,6 +14,7 @@ import java.util.function.Supplier;
  * Created by orfeo.ciano on 29/11/2016.
  */
 public class MainWindow extends JFrame {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private JPanel panel;
     private JComboBox<Supplier<Controller>> cmbControllers;
     private JComboBox<Supplier<FrameListener>> cmbFrameListeners;
@@ -51,7 +54,7 @@ public class MainWindow extends JFrame {
                 cx10 = new CX10(controllerSupplier.get(), frameListenerSupplier.get());
                 updateUI("Connected...");
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed to connect", e);
                 updateUI(e.getMessage());
             }
         }
@@ -64,7 +67,7 @@ public class MainWindow extends JFrame {
                 cx10 = null;
                 updateUI("Disconnected...");
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed to disconnect", e);
                 updateUI(e.getMessage());
             }
         }

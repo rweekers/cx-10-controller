@@ -10,16 +10,25 @@ import java.io.InputStream;
 public class ByteUtils {
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    
+    public static Object lazyBytesToHex(byte[] bytes) {
+        return new Object() {
+            @Override
+            public String toString() {
+                return bytesToHex(bytes);
+            }
+        };
+    }
 
     public static String bytesToHex(byte[] bytes) {
-        String output = "";
+        StringBuilder output = new StringBuilder();
         for (byte aByte : bytes) {
             int v = aByte & 0xFF;
-            output += hexArray[v >>> 4];
-            output += hexArray[v & 0x0F];
-            output += " ";
+            output.append(hexArray[v >>> 4]);
+            output.append(hexArray[v & 0x0F]);
+            output.append(" ");
         }
-        return output;
+        return output.toString();
     }
 
     public static byte[] asUnsigned(int... values) {

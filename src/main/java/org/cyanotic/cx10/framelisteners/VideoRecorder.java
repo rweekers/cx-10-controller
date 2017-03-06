@@ -4,6 +4,8 @@ import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameRecorder;
 import org.cyanotic.cx10.api.FrameListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class VideoRecorder implements FrameListener {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final FrameRecorder frameRecorder;
     private final AtomicBoolean initialized = new AtomicBoolean();
 
@@ -36,18 +39,23 @@ public class VideoRecorder implements FrameListener {
     }
 
     @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
     public void frameReceived(Frame frame) {
         if (initialized.compareAndSet(false, true)) {
             try {
                 frameRecorder.start();
             } catch (FrameRecorder.Exception e) {
-                e.printStackTrace();
+                logger.error("Failed to start frame recorder", e);
             }
         }
         try {
             frameRecorder.record(frame);
         } catch (FrameRecorder.Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to record frame", e);
         }
     }
 

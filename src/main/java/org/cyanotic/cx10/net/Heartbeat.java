@@ -1,56 +1,40 @@
 package org.cyanotic.cx10.net;
 
 import org.cyanotic.cx10.utils.ByteUtils;
+import org.cyanotic.cx10.utils.ExecutorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.Socket;
+import java.io.IOException;
+import java.util.concurrent.ScheduledFuture;
 
 /**
  * Created by cyanotic on 19/11/2016.
  */
-public class Heartbeat implements AutoCloseable, Runnable {
+public class Heartbeat implements AutoCloseable {
 
-    private final Socket socket;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final TransportConnection transportConnection;
+    private final ScheduledFuture<?> future;
 
-    public Heartbeat(String host, int port) throws IOException {
-        socket = new Socket(host, port);
+    public Heartbeat(TransportConnection transportConnection) throws IOException {
+        this.transportConnection = transportConnection;
+        this.future = ExecutorUtils.scheduleHeartbeat(this::sendHeartBeat);
     }
 
     @Override
     public void close() throws IOException {
-        socket.close();
+        future.cancel(false);
+        transportConnection.close();
     }
 
-    @Override
-    public void run() {
+    private void sendHeartBeat() {
         try {
-            sendHeartBeat();
+            logger.info("Sending heartbeat...");
+            transportConnection.sendMessage(ByteUtils.loadMessageFromFile("heartbeat.bin"), 106);
+            logger.info("The drone is alive.");
         } catch (IOException e) {
-            System.err.println("Unable to send heartbeat");
-            e.printStackTrace();
+            logger.error("Unable to send heartbeat", e);
         }
-    }
-
-    private void sendHeartBeat() throws IOException {
-        System.out.println("Sending heartbeat...");
-        byte[] heartbeatData = ByteUtils.loadMessageFromFile("heartbeat.bin");
-        int start = 0;
-        int len = heartbeatData.length;
-        OutputStream out = socket.getOutputStream();
-        DataOutputStream dos = new DataOutputStream(out);
-
-        if (len > 0) {
-            dos.write(heartbeatData, start, len);
-        }
-        dos.flush();
-        DataInputStream dis = new DataInputStream(socket.getInputStream());
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        byte[] buf = new byte[106];
-        int bytesRead;
-        bytesRead = dis.read(buf);
-        baos.write(buf, 0, bytesRead);
-        System.out.println("The drone is alive.");
     }
 }

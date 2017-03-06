@@ -4,6 +4,8 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.cyanotic.cx10.utils.ExecutorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -14,6 +16,7 @@ import java.io.PipedOutputStream;
  * Stream #0:0: Video: h264 (Main), yuv420p(progressive), 720x576, 25 fps, 25 tbr, 1200k tbn, 50 tbc
  */
 public class H264Decoder implements AutoCloseable {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final CX10NalDecoder cx10NalDecoder;
     private final PipedOutputStream outputStream;
     private final FrameGrabber grabber;
@@ -34,7 +37,7 @@ public class H264Decoder implements AutoCloseable {
                 }
                 close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to decode frame", e);
             }
         }).start();
     }
@@ -56,7 +59,7 @@ public class H264Decoder implements AutoCloseable {
         return cx10NalDecoder.isConnected();
     }
 
-    public Frame readFrame() throws FrameGrabber.Exception {
+    public Frame readFrame() throws IOException {
         if (!isConnected()) {
             return null;
         }
