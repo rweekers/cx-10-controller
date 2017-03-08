@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.Collection;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
 /**
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
  */
 public class MainWindow extends JFrame {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final ScheduledExecutorService executor;
     private JPanel panel;
     private JComboBox<Supplier<Controller>> cmbControllers;
     private JComboBox<Supplier<FrameListener>> cmbFrameListeners;
@@ -24,7 +26,11 @@ public class MainWindow extends JFrame {
 
     private CX10 cx10;
 
-    public MainWindow(Collection<Supplier<Controller>> controllers, Collection<Supplier<FrameListener>> frameListeners) {
+    public MainWindow(ScheduledExecutorService executor,
+                      Collection<Supplier<Controller>> controllers,
+                      Collection<Supplier<FrameListener>> frameListeners) {
+        this.executor = executor;
+
         controllers.forEach(cmbControllers::addItem);
         frameListeners.forEach(cmbFrameListeners::addItem);
 
@@ -51,7 +57,7 @@ public class MainWindow extends JFrame {
             try {
                 Supplier<Controller> controllerSupplier = (Supplier<Controller>) cmbControllers.getSelectedItem();
                 Supplier<FrameListener> frameListenerSupplier = (Supplier<FrameListener>) cmbFrameListeners.getSelectedItem();
-                cx10 = new CX10(controllerSupplier.get(), frameListenerSupplier.get());
+                cx10 = new CX10(executor, controllerSupplier.get(), frameListenerSupplier.get());
                 updateUI("Connected...");
             } catch (Exception e) {
                 logger.error("Failed to connect", e);
