@@ -4,13 +4,14 @@ import org.cyanotic.cx10.utils.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public abstract class AbstractTCPConnection implements AutoCloseable {
+public abstract class AbstractTCPConnection implements Closeable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final Socket socket;
@@ -18,6 +19,7 @@ public abstract class AbstractTCPConnection implements AutoCloseable {
     private final OutputStream outputStream;
 
     public AbstractTCPConnection(String host, int port) throws IOException {
+        logger.info("Connecting to {}:{} (TCP)", host, port);
         InetAddress address = InetAddress.getByName(host);
         socket = new Socket(address, port);
         outputStream = socket.getOutputStream();
