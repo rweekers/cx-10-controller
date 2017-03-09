@@ -25,10 +25,7 @@ public class FrameDispatcher implements Runnable {
     public void run() {
         try {
             while (true) {
-                final Frame frame = h264Decoder.readFrame();
-                if (frame != null && frameListener.isAvailable()) {
-                    frameListener.frameReceived(frame);
-                }
+                dispatchFrame();
             }
         } catch (Exception e) {
             logger.error("Failed to grab frame", e);
@@ -37,6 +34,13 @@ public class FrameDispatcher implements Runnable {
             h264Decoder.close();
         } catch (IOException e) {
             logger.error("Failed to close", e);
+        }
+    }
+
+    public void dispatchFrame() throws IOException {
+        final Frame frame = h264Decoder.readFrame();
+        if (frame != null && frameListener.isAvailable()) {
+            frameListener.frameReceived(frame);
         }
     }
 }
