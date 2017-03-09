@@ -6,6 +6,9 @@ import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
+import org.cyanotic.cx10.team2.GuiProcessor;
+import org.cyanotic.cx10.team2.ProcessorController;
+import org.cyanotic.cx10.team2.ui.Delta;
 import org.cyanotic.cx10.ui.MainWindow;
 
 import java.io.IOException;
@@ -24,6 +27,19 @@ public class UILauncher {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
+        controllers.add(new Supplier<Controller>() {
+            @Override
+            public Controller get() {
+                final GuiProcessor processor = new GuiProcessor(new Delta());
+
+                return new ProcessorController(processor);
+            }
+
+            @Override
+            public String toString() {
+                return "Team 2 GUI processor controller";
+            }
+        });
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {

@@ -30,4 +30,9 @@ public class VideoProcessor extends ImageListener implements Processor {
     public Point getDelta() {
         return null;
     }
+
+    @Override
+    public int getScale() {
+        return 0;
+    }
 }
