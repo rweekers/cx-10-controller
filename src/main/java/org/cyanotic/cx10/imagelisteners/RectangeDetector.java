@@ -1,5 +1,8 @@
+
 package org.cyanotic.cx10.imagelisteners;
 
+import nl.craftsmen.cx10.measure.IMeasuredValues;
+import nl.craftsmen.cx10.measure.MeasureValuesCache;
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_imgcodecs;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -22,8 +25,13 @@ public class RectangeDetector extends ImageListener {
 
     public static int i = 0;
 
-    public RectangeDetector(ExecutorService executorService) {
+    private MeasureValuesCache measuredValues ;
+
+    public RectangeDetector(ExecutorService executorService, MeasureValuesCache measuredValues) {
         super(executorService);
+        this.measuredValues = measuredValues;
+        this.measuredValues.measurementAvailable=false;
+
     }
 
     @Override

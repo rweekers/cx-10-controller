@@ -1,5 +1,7 @@
 package org.cyanotic.cx10.controllers;
 
+import nl.craftsmen.cx10.measure.IMeasuredValues;
+import nl.craftsmen.cx10.measure.MeasureValuesCache;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
 
@@ -12,9 +14,10 @@ public class FlyInACircle implements Controller {
     private static final Command TURN_COMMAND = new Command(0, 50, 0, 1, false, false);
     private boolean initialized = false;
 
+
     @Override
     public void close() {
-        // do nothing
+
     }
 
     @Override

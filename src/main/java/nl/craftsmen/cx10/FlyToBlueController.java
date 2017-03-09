@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 /**
  * Created by gerlo on 09/03/2017.
  */
-public class FlyToBlue implements Controller {
+public class FlyToBlueController implements Controller {
 
     Logger LOGGER = Logger.getLogger("flytoblue");
 
@@ -32,12 +32,16 @@ public class FlyToBlue implements Controller {
     long startTime = System.currentTimeMillis();
 
 
-    IMeasuredValues measuredValues = new MeasuredValuesStub();
-    PIDController yPIDController = new PIDController(gewensteY, 0);
-    PIDController xPIDController = new PIDController(gewensteX, 0);
-    PIDController afstandPidController = new PIDController(gewensteAfstand, 0);
+    private IMeasuredValues measuredValues ;
+    private PIDController yPIDController = new PIDController(gewensteY, 0);
+    private PIDController xPIDController = new PIDController(gewensteX, 0);
+    private PIDController afstandPidController = new PIDController(gewensteAfstand, 0);
     private boolean initialized = false;
     private boolean geland = false;
+
+    public FlyToBlueController(IMeasuredValues measureValuesCache) {
+        measuredValues = measureValuesCache;
+    }
 
 
     public int controlY() {
