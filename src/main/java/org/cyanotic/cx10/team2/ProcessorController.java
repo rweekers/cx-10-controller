@@ -93,6 +93,8 @@ public class ProcessorController implements Controller {
         }
 
         // don't know that to do next
+        LOGGER.warn("DON'T KNOW WHAT TO DO...");
+
         return IDLE_COMMAND;
     }
 
@@ -101,32 +103,46 @@ public class ProcessorController implements Controller {
 
         if (delta.getX() < 0) {
             // rotate left
+            LOGGER.info("ROTATE LEFT");
+
             command.setYaw(-YAW_CORRECTION_VALUE);
         } else if (delta.getX() > 0) {
             // rotate right
+            LOGGER.info("ROTATE RIGHT");
+
             command.setYaw(YAW_CORRECTION_VALUE);
         }
 
         // if no image found, just rotate
         if (delta.getX() == 0 && delta.getY() == 0) {
+            LOGGER.info("ROTATE RIGHT (nothing found)");
+
             command.setYaw(YAW_CORRECTION_VALUE);
         }
 
         if (delta.getY() < 0) {
             // go lower
+            LOGGER.info("LOWER");
+
             command.setThrottle(-THROTTLE_CORRECTION_VALUE);
         } else if (delta.getY() > 0) {
             // go higher
+            LOGGER.info("HIGHER");
+
             command.setThrottle(THROTTLE_CORRECTION_VALUE + 20);
         }
 
         // if need to come closer
         if (delta.getScale() < 0 && Math.abs(delta.getX()) < 5) {
             // need to come closer
+            LOGGER.info("FORWARDS");
+
             command.setPitch(PITCH_CORRECTION_VALUE);
 
         } else if (delta.getScale() > 0) {
             // need to go backwards
+            LOGGER.info("BACKWARDS");
+
             command.setPitch(-PITCH_CORRECTION_VALUE);
         }
 
@@ -135,15 +151,6 @@ public class ProcessorController implements Controller {
 
     private boolean searchCompleted() {
         Delta delta = processor.getDelta();
-
-        // temp code
-//        if (captured) {
-//            return false;
-//        }
-
-        //return processor.isReadyForCapture();
-
-        //return Math.abs(delta.getX()) == 50 && Math.abs(delta.getY()) == 50 && Math.abs(delta.getScale()) == 50;
 
         return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
     }
