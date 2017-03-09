@@ -10,19 +10,21 @@ public class HackatonController implements Controller {
 
     private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false, "takeoff");
     private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true, "land");
-    private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, false, false, "idle");
-    private static final Command TURN_RIGHT_COMMAND = new Command(0, 127, 0, 0, false, false, "turnright");
+    private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, true, false, "idle");
+    private static final Command TURN_RIGHT_COMMAND = new Command(0, 32, 0, 0, false, false, "turnright");
     private static final Command TURN_LEFT_COMMAND = new Command(0, -64, 0, 0, false, false, "turnleft");
     private static final Command FORWARD_COMMAND = new Command(64, 0, 0, 0, false, false, "forward");
     private static final Command BACKWARD_COMMAND = new Command(-64, 0, 0, 0, false, false, "backward");
+    private static final int MAX_FLIGHT_TIME = 250;
 
     private boolean takenOff = false;
 
+    private boolean readyForStart = false;
     private int teller = 0;
 
     private static int OFFSET = 150;
 
-    private Command currentCommand;
+    private Command currentCommand = TAKEOFF_COMMAND;
 
     private static Map<Integer, Command> scenario = new HashMap<>();
 
@@ -47,12 +49,27 @@ public class HackatonController implements Controller {
     @Override
     public Command getCommand() {
         teller++;
-        System.out.println("command: " + currentCommand);
-        if (teller  > 100) {
+        if (!takenOff) {
+            System.out.println("taking off!");
+            takenOff = true;
+            return TAKEOFF_COMMAND;
+        } else if (teller > MAX_FLIGHT_TIME) {
             return LAND_COMMAND;
-        } else {
-            return currentCommand != null ? currentCommand : IDLE_COMMAND;
+        } else if (currentCommand != null) {
+            return currentCommand;
         }
+        return IDLE_COMMAND;
+
+//        if (readyForStart && !takenOff) {
+//            takenOff = true;
+//            System.out.println("taken off!");
+//            return TAKEOFF_COMMAND;
+//        } else if (teller  > 100) {
+//            return LAND_COMMAND;
+//        } else {
+//            teller++;
+//            return currentCommand != null ? currentCommand : IDLE_COMMAND;
+//        }
     }
 
     private int getNettoTeller() {
@@ -65,12 +82,7 @@ public class HackatonController implements Controller {
     }
 
     public void onReceiveImageData(opencv_core.KeyPointVector keyPointVector) {
-        if (!takenOff) {
-            takenOff = true;
-            currentCommand =  TAKEOFF_COMMAND;
-        }
         if (keyPointVector == null || keyPointVector.size() == 0) {
-            System.out.println("SETTING COMMAND TO TURNING");
             currentCommand = TURN_RIGHT_COMMAND;
         } else {
             currentCommand = IDLE_COMMAND;
