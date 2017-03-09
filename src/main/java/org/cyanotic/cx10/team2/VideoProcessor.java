@@ -22,6 +22,7 @@ public class VideoProcessor extends ImageListener implements Processor {
     private final CanvasFrame detectedGroup = new CanvasFrame("Detected");
     private Color color = Color.RED;
     private Gate gate;
+    private BufferedImage lastImage;
     private ProcessedImage lastProcessedImage;
     private int threshold = 100;
 
@@ -40,6 +41,7 @@ public class VideoProcessor extends ImageListener implements Processor {
         if (gate == null) {
             gate = new Gate(imageSource.getWidth(), imageSource.getHeight(), 1);
         }
+        lastImage = image;
         lastProcessedImage = new ProcessedImage(imageSource, gate, color, threshold);
 //        updateMean(lastProcessedImage);
 //        updateThreshold(lastProcessedImage);
@@ -63,15 +65,8 @@ public class VideoProcessor extends ImageListener implements Processor {
     }
 
     @Override
-    public boolean isReadyForCapture() {
-        // todo!
-
-        return false;
-    }
-
-    @Override
     public void capture() {
-        // todo: save last image
+        ImageUtil.saveAsPng(lastImage, "PHOTO.png");
     }
 
     @Override

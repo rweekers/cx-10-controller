@@ -18,17 +18,12 @@ public class GuiProcessor implements Processor {
     }
 
     @Override
-    public boolean isReadyForCapture() {
-        return deltaFrame.isReadyForCapture();
-    }
-
-    @Override
     public void capture() {
         // nothing
     }
 
     @Override
     public void setColor(final Color color) {
-        // todo
+
     }
 }

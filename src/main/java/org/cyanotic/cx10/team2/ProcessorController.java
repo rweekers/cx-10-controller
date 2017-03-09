@@ -140,12 +140,11 @@ public class ProcessorController implements Controller {
 //            return false;
 //        }
 
-        return processor.isReadyForCapture();
+        //return processor.isReadyForCapture();
 
         //return Math.abs(delta.getX()) == 50 && Math.abs(delta.getY()) == 50 && Math.abs(delta.getScale()) == 50;
 
-        // todo:
-        //return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
+        return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
     }
 
     private void playSound(String fileName) {
