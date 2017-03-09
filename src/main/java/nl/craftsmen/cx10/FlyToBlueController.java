@@ -1,15 +1,12 @@
 package nl.craftsmen.cx10;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
+import java.io.IOException;
+import java.util.logging.Logger;
+
 import nl.craftsmen.cx10.measure.IMeasuredValues;
-import nl.craftsmen.cx10.measure.MeasuredValuesStub;
 import nl.craftsmen.cx10.pid.PIDController;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
-
-import java.io.IOException;
-import java.io.SyncFailedException;
-import java.util.logging.Logger;
 
 /**
  * Created by gerlo on 09/03/2017.
@@ -25,8 +22,8 @@ public class FlyToBlueController implements Controller {
     private static final Command TURN_COMMAND = new Command(0, 50, 0, 0, false, false);
 
 
-    int gewensteY = 720 / 2;
-    int gewensteX = 576 / 2;
+    int gewensteY = 576 / 2;
+    int gewensteX = 720 / 2;
     int gewensteAfstand = 250 * 100;
     long flytime = 0; //flytime in milleseconds
     long startTime = System.currentTimeMillis();
@@ -75,9 +72,8 @@ public class FlyToBlueController implements Controller {
             System.exit(0);
         }
         flytime = System.currentTimeMillis() - startTime;
-        LOGGER.info("getCommand, flytime: " + flytime);
 
-        if (flytime > 10000) {
+        if (flytime > 100000) {
             LOGGER.info("object niet gevonden... helaas landen");
             geland = true;
             return LAND_COMMAND;
@@ -104,10 +100,9 @@ public class FlyToBlueController implements Controller {
 
             }
             int throttle = controlY();
-            LOGGER.info("throttle:" + throttle);
 
             int yaw = controlX();
-            LOGGER.info("yaw:" + yaw);
+            LOGGER.info("yaw:" + yaw + "throttle:" + throttle);
             return new Command(0, yaw, 0, throttle, false, false);
 
 
@@ -115,6 +110,7 @@ public class FlyToBlueController implements Controller {
 
 
         //rotate...
+        LOGGER.info("rotate" );
         return TURN_COMMAND;
 
 
