@@ -2,26 +2,14 @@ package org.cyanotic.cx10.framelisteners;
 
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_imgproc;
-import org.bytedeco.javacv.CanvasFrame;
-import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Vector;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.bytedeco.javacpp.helper.opencv_core.cvNorm;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvFlip;
-import static org.bytedeco.javacpp.opencv_core.cvGetSize;
-import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
-import static org.bytedeco.javacpp.opencv_core.cvMat;
-import static org.bytedeco.javacpp.opencv_core.cvScalar;
+import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 public class FindColor extends SwingVideoPlayer {
@@ -33,8 +21,8 @@ public class FindColor extends SwingVideoPlayer {
     private final OpenCVFrameConverter.ToIplImage iplConverter;
     private final Java2DFrameConverter java2dConverter;
 
-    private static final int CENTER_X = 720/2;
-    private static final int CENTER_Y = 576/2;
+    private static final int CENTER_X = 720 / 2;
+    private static final int CENTER_Y = 576 / 2;
 
     private static final opencv_core.CvPoint CENTER = new opencv_core.CvPoint(CENTER_X, CENTER_Y);
 
@@ -73,7 +61,7 @@ public class FindColor extends SwingVideoPlayer {
     }
 
     public opencv_core.CvPoint getDistanceToCenter() {
-        if(posX <= 0 || posY <= 0) {
+        if (posX <= 0 || posY <= 0) {
             return null;
         }
 
@@ -84,25 +72,82 @@ public class FindColor extends SwingVideoPlayer {
         opencv_core.IplImage imgThreshold = cvCreateImage(cvGetSize(orgImg), 8, 1);
         cvInRangeS(orgImg, rgba_min, rgba_max, imgThreshold);// red
 
-        cvSmooth(imgThreshold, imgThreshold, CV_MEDIAN, 15,0,0,0);
+        cvSmooth(imgThreshold, imgThreshold, CV_MEDIAN, 15, 0, 0, 0);
         return imgThreshold;
     }
 
     private void paint(opencv_core.IplImage image, int posX, int posY) {
-        opencv_core.CvPoint point = new opencv_core.CvPoint(posX, posY);
+        opencv_core.CvPoint point = toCvPoint(getPointForDetectedColour(posX, posY));
+
+        final String text = ">>>>>>> Detected spot => " + getDirections(posX, posY);
+        System.out.println(text);
+
+        //TODO Doet niet?
+        cvPutText(image, text, new opencv_core.CvPoint(0, 0), new CvFont().font_face(CV_FONT_HERSHEY_PLAIN).thickness(10).color(opencv_core.CvScalar.GREEN), opencv_core.CvScalar.GREEN);
 
         cvDrawCircle(image, point, 20, opencv_core.CvScalar.GREEN, 3, 8, 0);
         cvDrawLine(image, point, CENTER, opencv_core.CvScalar.BLUE, 1, 8, 0);
 
         System.out.println("x:" + getDistanceToCenter().x() + " y: " + getDistanceToCenter().y() + ", distance from center: " + euclideanDist(
-                new Point(point.x(), point.y()),
-                new Point(CENTER.x(), CENTER.y())));
+                getPointForDetectedColour(posX, posY),
+                getPointForImageCenter()));
 
     }
 
-    double euclideanDist(Point p, Point q)
-    {
+    private CvPoint toCvPoint(Point point) {
+        return new opencv_core.CvPoint(point.x, point.y);
+    }
+
+    private Point getPointForImageCenter() {
+        return new Point(CENTER.x(), CENTER.y());
+    }
+
+    private Point getPointForDetectedColour(int posX, int posY) {
+        return new Point(posX, posY);
+    }
+
+    double euclideanDist(Point p, Point q) {
         return p.distance(q);
+    }
+
+    private String getDirections(int posX, int posY) {
+        final float angle = getAngle(new Point(posX, posY));
+        final StringBuilder builder = new StringBuilder();
+        builder.append("Angle is : " + angle + ", go => ");
+
+        if (angle == 0) {
+            return builder.append("UP").toString();
+        } else if (angle > 0 && angle < 90) {
+            return builder.append("UP and RIGHT").toString();
+        } else if (angle == 90) {
+            return builder.append("RIGHT").toString();
+        } else if (angle > 90 && angle < 180) {
+            return builder.append("DOWN and RIGHT").toString();
+        } else if (angle == 180) {
+            return builder.append("DOWN").toString();
+        } else if (angle > 180 && angle < 270) {
+            return builder.append("DOWN and LEFT").toString();
+        } else if (angle == 270) {
+            return builder.append("LEFT").toString();
+        } else if (angle > 270 && angle < 360) {
+            return builder.append("UP and LEFT").toString();
+        } else if (angle == 360) {
+            return builder.append("UP").toString();
+        } else {
+            return builder.append("DOWN?").toString();
+        }
+    }
+
+    public float getAngle(Point target) {
+        int originX = 0;
+        int originY = 0;
+        float angle = (float) Math.toDegrees(Math.atan2(target.getY() - originY, target.getX() - originX));
+
+        if (angle < 0) {
+            angle += 360;
+        }
+
+        return angle;
     }
 
     public opencv_core.IplImage Equalize(BufferedImage bufferedimg) {
