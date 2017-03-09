@@ -1,5 +1,6 @@
 package org.cyanotic.cx10.common;
 
+import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.net.CommandConnection;
 
@@ -14,6 +15,7 @@ public class CommandDispatcher implements Runnable {
 
     @Override
     public void run() {
-        commandConnection.sendCommand(controller.getCommand());
+        Command command = controller.getCommand();
+        if (command != null) commandConnection.sendCommand(command);
     }
 }

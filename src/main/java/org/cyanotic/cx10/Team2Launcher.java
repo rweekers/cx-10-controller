@@ -12,7 +12,7 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Team2Launcher {
     public static void main(String[] args) throws Exception {
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
         VideoProcessor frameListener = new VideoProcessor(executor);
         ProcessorController controller = new ProcessorController(frameListener, Color.RED, Color.BLUE);
         new CX10(executor, controller, frameListener);

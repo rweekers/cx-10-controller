@@ -28,7 +28,7 @@ public class ProcessorController implements Controller {
     private final Color captureColor;
     private final Color landColor;
 
-    private int initialized = 0;
+    private boolean initialized = false;
     private boolean captured = false;
     private boolean hasLanded = false;
 
@@ -50,9 +50,17 @@ public class ProcessorController implements Controller {
 
     @Override
     public Command getCommand() {
+        Delta delta = processor.getDelta();
+        if (delta == null) {
+            LOGGER.info("No video. Waiting...");
+            return IDLE_COMMAND;
+        }
+
         // not init
-        if (initialized++ < 5) {
+        if (!initialized) {
             LOGGER.info("INITIALIZING...");
+
+            initialized = true;
 
             return TAKEOFF_COMMAND;
         }
@@ -63,10 +71,10 @@ public class ProcessorController implements Controller {
             return IDLE_COMMAND;
         }
 
-        if (!searchCompleted()) {
+        if (!searchCompleted(delta)) {
             LOGGER.info("SEARCHING...");
 
-            return createSearchCommand();
+            return createSearchCommand(delta);
         }
 
         if (!captured) {
@@ -95,9 +103,7 @@ public class ProcessorController implements Controller {
         return IDLE_COMMAND;
     }
 
-    private Command createSearchCommand() {
-        Delta delta = processor.getDelta();
-
+    private Command createSearchCommand(Delta delta) {
         if (delta.getX() < 0) {
             // rotate left
             LOGGER.info("ROTATE LEFT");
@@ -146,9 +152,7 @@ public class ProcessorController implements Controller {
         return command;
     }
 
-    private boolean searchCompleted() {
-        Delta delta = processor.getDelta();
-
+    private boolean searchCompleted(Delta delta) {
         return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
     }
 
