@@ -28,4 +28,9 @@ public class GuiProcessor implements Processor {
     public void setColor(final Color color) {
 
     }
+
+    @Override
+    public void setThreshold(int threshold) {
+
+    }
 }

@@ -26,22 +26,18 @@ public class UILauncher {
     public static void main(String[] args) throws IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
-        Collection<Supplier<Controller>> controllers = new ArrayList<>();
+        VideoProcessor videoProcessor = new VideoProcessor(executor);
+        ProcessorController processorController = new ProcessorController(
+                videoProcessor,
+                Color.RED,
+                Color.BLUE
+        );
 
+        Collection<Supplier<Controller>> controllers = new ArrayList<>();
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new ProcessorController(
-                        new VideoProcessor(executor),
-                        Color.RED,
-                        Color.BLUE
-                );
-
-//                return new ProcessorController(
-//                        new GuiProcessor(new DeltaFrame()),
-//                        Color.RED,
-//                        Color.BLUE
-//                );
+                return processorController;
             }
 
             @Override
@@ -73,6 +69,17 @@ public class UILauncher {
         });
 
         Collection<Supplier<FrameListener>> frameListeners = new ArrayList<>();
+        frameListeners.add(new Supplier<FrameListener>() {
+            @Override
+            public FrameListener get() {
+                return videoProcessor;
+            }
+
+            @Override
+            public String toString() {
+                return "Team 2 Capture Red - Return Blue";
+            }
+        });
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {

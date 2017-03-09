@@ -9,4 +9,5 @@ public interface Processor {
     Delta getDelta();
     void capture();
     void setColor(Color color);
+    void setThreshold(int threshold);
 }

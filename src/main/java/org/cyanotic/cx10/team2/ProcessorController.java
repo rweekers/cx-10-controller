@@ -28,19 +28,18 @@ public class ProcessorController implements Controller {
     private final Color captureColor;
     private final Color landColor;
 
-    private boolean initialized = false;
+    private int initialized = 0;
     private boolean captured = false;
     private boolean hasLanded = false;
 
     private final Processor processor;
 
-    private Command command = new Command(0, 0, 0, 0, false, false);
+    private Command command = new Command(0, 0, 0, 0, true, false);
 
     public ProcessorController(Processor processor, Color captureColor, Color landColor) {
         this.processor = processor;
         this.captureColor = captureColor;
         this.landColor = landColor;
-
         this.processor.setColor(this.captureColor);
     }
 
@@ -52,10 +51,8 @@ public class ProcessorController implements Controller {
     @Override
     public Command getCommand() {
         // not init
-        if (!initialized) {
+        if (initialized++ < 5) {
             LOGGER.info("INITIALIZING...");
-
-            initialized = true;
 
             return TAKEOFF_COMMAND;
         }

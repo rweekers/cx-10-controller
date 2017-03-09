@@ -20,22 +20,22 @@ public class VideoProcessor extends ImageListener implements Processor {
     private static final ColorModel GREEN_COLOR_MODEL = new DirectColorModel(8, 0, 0x000000ff, 0, 0);
     private static final ColorModel BLUE_COLOR_MODEL = new DirectColorModel(8, 0, 0, 0x000000ff, 0);
 
-    private final CanvasFrame detectedGroup;
+    private final CanvasFrame canvasFrame;
     private Color color = Color.RED;
+    private int threshold = 100;
     private Gate gate;
     private BufferedImage lastImage;
     private ProcessedImage lastProcessedImage;
-    private int threshold = 100;
 
     public VideoProcessor(ScheduledExecutorService executor) {
         super(executor);
-        detectedGroup = new CanvasFrame("Detected");
-        detectedGroup.setSize(720, 576);
+        canvasFrame = new CanvasFrame("Detected video");
+        canvasFrame.setSize(720, 576);
     }
 
     @Override
     public void close() throws IOException {
-
+        canvasFrame.dispose();
     }
 
     @Override
@@ -48,14 +48,14 @@ public class VideoProcessor extends ImageListener implements Processor {
         lastProcessedImage = new ProcessedImage(imageSource, gate, color, threshold);
 //        updateMean(lastProcessedImage);
 //        updateThreshold(lastProcessedImage);
-        updateGate(imageSource.getWidth(), imageSource.getHeight(), lastProcessedImage);
+        autoGate(imageSource.getWidth(), imageSource.getHeight(), lastProcessedImage);
 
         PixelGroup brightestPixelGroup = lastProcessedImage.getDetectedPixelGroup();
         if (brightestPixelGroup != null) {
             BufferedImage render = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
             brightestPixelGroup.draw(render, 0xFFFFFFFF);
             gate.draw(render, 0xFFF000F0);
-            detectedGroup.showImage(render);
+            canvasFrame.showImage(render);
         }
     }
 
@@ -77,7 +77,12 @@ public class VideoProcessor extends ImageListener implements Processor {
         this.color = color;
     }
 
-    private void updateThreshold(ProcessedImage processedImage) {
+    @Override
+    public void setThreshold(int threshold) {
+        this.threshold = threshold;
+    }
+
+    private void autoThreshold(ProcessedImage processedImage) {
         // Update the threshold.
         PixelGroup pixelGroup = processedImage.getDetectedPixelGroup();
         if (pixelGroup == null) {
@@ -87,7 +92,7 @@ public class VideoProcessor extends ImageListener implements Processor {
         }
     }
 
-    private void updateGate(int width, int height, ProcessedImage processedImage) {
+    private void autoGate(int width, int height, ProcessedImage processedImage) {
         // Update the gate.
         PixelGroup pixelGroup = processedImage.getDetectedPixelGroup();
         if (pixelGroup == null && gate.getSize() < 1) {
