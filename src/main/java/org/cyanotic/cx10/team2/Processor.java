@@ -5,6 +5,9 @@ package org.cyanotic.cx10.team2;
  */
 public interface Processor {
     Delta getDelta();
+
+    boolean isReadyForCapture();
+
     void capture();
     void setColor(Color color);
 }

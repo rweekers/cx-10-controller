@@ -26,16 +26,21 @@ public class UILauncher {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
+
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                //final GuiProcessor processor = new GuiProcessor(new DeltaFrame());
-
                 return new ProcessorController(
                         new VideoProcessor(executor),
                         Color.RED,
                         Color.BLUE
                 );
+
+//                return new ProcessorController(
+//                        new GuiProcessor(new DeltaFrame()),
+//                        Color.RED,
+//                        Color.BLUE
+//                );
             }
 
             @Override

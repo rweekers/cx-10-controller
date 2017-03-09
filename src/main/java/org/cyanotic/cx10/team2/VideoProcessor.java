@@ -66,6 +66,13 @@ public class VideoProcessor extends ImageListener implements Processor {
     }
 
     @Override
+    public boolean isReadyForCapture() {
+        // todo!
+
+        return false;
+    }
+
+    @Override
     public void capture() {
         // todo: save last image
     }

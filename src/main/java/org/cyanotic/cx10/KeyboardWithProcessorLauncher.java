@@ -13,6 +13,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class KeyboardWithProcessorLauncher {
     public static void main(String[] args) throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
-        new CX10(executor, new Keyboard(), new VideoProcessor(executor, Color.RED));
+        new CX10(executor, new Keyboard(), new VideoProcessor(executor));
     }
 }
