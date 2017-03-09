@@ -1,7 +1,4 @@
 package org.cyanotic.cx10.controllers;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bytedeco.javacpp.opencv_core;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
@@ -16,8 +13,9 @@ public class HackatonController implements Controller {
     private static final Command FORWARD_COMMAND = new Command(64, 0, 0, 0, false, false, "forward");
     private static final Command BACKWARD_COMMAND = new Command(-64, 0, 0, 0, false, false, "backward");
     private static final int DECELERATION = 1;
+    private static final int MIN_THESHOLD = 20;
     private final Command UP_COMMAND = new Command(0, 0, 0, 30, false, false, "backward");
-    private static final int MAX_FLIGHT_TIME = 250;
+    private static final int MAX_FLIGHT_TIME = 500;
 
     private boolean takenOff = false;
 
@@ -25,12 +23,17 @@ public class HackatonController implements Controller {
     private int teller = 0;
     private int throttle = 5;
 
+    private boolean stop = false;
+
     private Command currentCommand;
 
     @Override
     public Command getCommand() {
         teller++;
-        if (!takenOff) {
+        System.out.println("teller: " + teller);
+        if (stop) {
+            return LAND_COMMAND;
+        } else if (!takenOff) {
             System.out.println("taking off!");
             takenOff = true;
             return TAKEOFF_COMMAND;
@@ -53,6 +56,9 @@ public class HackatonController implements Controller {
 
     public void onReceiveImageData(opencv_core.MatVector matVector) {
         System.out.println("image data received!");
+        if (matVector != null) {
+            System.out.println("matvector size: " + matVector.size());
+        }
         if (matVector == null || matVector.size() == 0) {
             System.out.println("going up!");
             currentCommand = createUpCommand();
@@ -61,9 +67,10 @@ public class HackatonController implements Controller {
             currentCommand = createUpCommand();
             System.out.println("getting closer...");
             afremmen();
-        } else if (currentFoundSize >= matVector.size()) {
+        } else if (currentFoundSize >= matVector.size() && matVector.size() > MIN_THESHOLD) {
             System.out.println("found it!");
-            //takepicture
+            stop = true;
+            // takepicture
             currentCommand = LAND_COMMAND;
 
         }
