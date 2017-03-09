@@ -47,5 +47,5 @@ public abstract class ImageListener implements FrameListener {
         }
     }
 
-    public abstract void imageReceived(Image image);
+    public abstract void imageReceived(BufferedImage image);
 }
