@@ -3,6 +3,7 @@ package org.cyanotic.cx10.team2;
 import org.bytedeco.javacv.CanvasFrame;
 import org.cyanotic.cx10.api.ImageListener;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
@@ -19,7 +20,7 @@ public class VideoProcessor extends ImageListener implements Processor {
     private static final ColorModel GREEN_COLOR_MODEL = new DirectColorModel(8, 0, 0x000000ff, 0, 0);
     private static final ColorModel BLUE_COLOR_MODEL = new DirectColorModel(8, 0, 0, 0x000000ff, 0);
 
-    private final CanvasFrame detectedGroup = new CanvasFrame("Detected");
+    private final CanvasFrame detectedGroup;
     private Color color = Color.RED;
     private Gate gate;
     private BufferedImage lastImage;
@@ -28,6 +29,8 @@ public class VideoProcessor extends ImageListener implements Processor {
 
     public VideoProcessor(ScheduledExecutorService executor) {
         super(executor);
+        detectedGroup = new CanvasFrame("Detected");
+        detectedGroup.setSize(720, 576);
     }
 
     @Override
@@ -50,7 +53,7 @@ public class VideoProcessor extends ImageListener implements Processor {
         PixelGroup brightestPixelGroup = lastProcessedImage.getDetectedPixelGroup();
         if (brightestPixelGroup != null) {
             BufferedImage render = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
-            brightestPixelGroup.draw(render, 0xFF000000);
+            brightestPixelGroup.draw(render, 0xFFFFFFFF);
             gate.draw(render, 0xFFF000F0);
             detectedGroup.showImage(render);
         }

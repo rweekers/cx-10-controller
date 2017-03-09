@@ -1,7 +1,6 @@
 package org.cyanotic.cx10;
 
 import org.cyanotic.cx10.controllers.Keyboard;
-import org.cyanotic.cx10.team2.Color;
 import org.cyanotic.cx10.team2.VideoProcessor;
 
 import java.util.concurrent.Executors;

@@ -1,6 +1,10 @@
 package org.cyanotic.cx10.team2;
 
+import org.cyanotic.cx10.utils.ByteUtils;
+
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by gerard on 9-3-17.
@@ -22,31 +26,17 @@ public class ProcessedImage {
                 int pixel = imageSource.getPixel(index);
 
                 int alpha = (pixel >> 24) & 0xFF;
-                if (alpha < 200) continue;
+                int red = (pixel >> 16) & 0xFF;
+                int green = (pixel >> 8) & 0xFF;
+                int blue = pixel & 0xFF;
 
-                int component;
-                switch (color) {
-                    case RED:
-                        int red = (pixel >> 16) & 0xFF;
-                        component = red;
-                        break;
-                    case GREEN:
-                        int green = (pixel >> 8) & 0xFF;
-                        component = green;
-                        break;
-                    case BLUE:
-                        int blue = pixel & 0xFF;
-                        component = blue;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unknown color " + color);
+                if (color.equals(Color.RED) && alpha > 200 && red > threshold && green < 100 && blue < 100) {
+                    markedPixels.put(index, red);
+                } else if (color.equals(Color.GREEN) && alpha > 200 && red < 100 && green > threshold && blue < 100) {
+                    markedPixels.put(index, red);
+                } else if (color.equals(Color.BLUE) && alpha > 200 && red < 100 && green < 100 && blue > threshold) {
+                    markedPixels.put(index, red);
                 }
-
-//                System.out.println(index + " = " + ByteUtils.bytesToHex(new byte[]{(byte) (pixel >> 24), (byte) (pixel >> 16), (byte) (pixel >> 8), (byte) pixel}));
-
-                if (component < threshold) continue;
-
-                markedPixels.put(index, component);
             }
         }
 
@@ -78,6 +68,10 @@ public class ProcessedImage {
 
     public PixelGroup getDetectedPixelGroup() {
         return detectedPixelGroup;
+    }
+
+    private static void printPixel(int index, int pixel) {
+        System.out.println(index + " = " + ByteUtils.bytesToHex(new byte[]{(byte) (pixel >> 24), (byte) (pixel >> 16), (byte) (pixel >> 8), (byte) pixel}));
     }
 
     private static PixelGroup determineBiggestPixelGroup(List<PixelGroup> pixelGroups) {

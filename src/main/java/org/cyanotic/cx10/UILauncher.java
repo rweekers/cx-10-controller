@@ -1,15 +1,16 @@
 package org.cyanotic.cx10;
 
 import org.cyanotic.cx10.api.Controller;
+import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.controllers.FlyInACircle;
 import org.cyanotic.cx10.controllers.Keyboard;
-import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
-import org.cyanotic.cx10.team2.*;
-import org.cyanotic.cx10.team2.ui.DeltaFrame;
+import org.cyanotic.cx10.team2.ProcessorController;
+import org.cyanotic.cx10.team2.VideoProcessor;
 import org.cyanotic.cx10.ui.MainWindow;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
