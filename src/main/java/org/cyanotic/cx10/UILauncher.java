@@ -67,6 +67,17 @@ public class UILauncher {
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {
+                return new RectangeDetector(executor, measuredValuesCache);
+            }
+
+            @Override
+            public String toString() {
+                return "RectangleDetector";
+            }
+        });
+        frameListeners.add(new Supplier<FrameListener>() {
+            @Override
+            public FrameListener get() {
                 return new SwingVideoPlayer(executor);
             }
 
@@ -86,17 +97,7 @@ public class UILauncher {
                 return "VideoRecorder";
             }
         });
-        frameListeners.add(new Supplier<FrameListener>() {
-            @Override
-            public FrameListener get() {
-                return new RectangeDetector(executor, measuredValuesCache);
-            }
 
-            @Override
-            public String toString() {
-                return "RectangleDetector";
-            }
-        });
 
         new MainWindow(executor, controllers, frameListeners);
     }
