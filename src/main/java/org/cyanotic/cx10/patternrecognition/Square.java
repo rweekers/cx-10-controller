@@ -185,10 +185,13 @@ public class Square {
 
                 gevonden = hasColor(iplImage, rect.position(0));
                 if (gevonden) {
+                    System.out.println("Blauwe rechthoek gevonden!");
                     bepaalMeasurement(rect.position(0), measuredValues);
                     measuredValues.measurementAvailable = true;
                     // cvPolyLine(cpy, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
-              }
+              } else {
+                    System.out.println("Geen blauwe rechthoek gevonden!");
+                }
             }
         }
         // ImageIO.write(ImageConverter.convertImage(cpy), "png", new File("image-copy.png"));
@@ -251,11 +254,12 @@ public class Square {
         System.out.println("max_y: " + max_y);
 
         // links onder
-        int gevonden = hasColor(iplImage, min_x, min_y) ? 1 : 0;
-        gevonden += hasColor(iplImage, min_x, max_y)? 1 : 0;
-        gevonden += hasColor(iplImage, max_x, min_y)? 1: 0;
-        gevonden += hasColor(iplImage, max_x, max_y)? 1 : 0;
-        return gevonden >= 2;
+//        int gevonden = hasColor(iplImage, min_x, min_y) ? 1 : 0;
+//        gevonden += hasColor(iplImage, min_x, max_y)? 1 : 0;
+//        gevonden += hasColor(iplImage, max_x, min_y)? 1: 0;
+//        gevonden += hasColor(iplImage, max_x, max_y)? 1 : 0;
+        int gevonden = hasColor(iplImage, (min_x + max_x)/ 2, (min_y + max_y)/2) ? 1 : 0;
+        return gevonden >= 1;
     }
 
     private boolean hasColor(IplImage iplImage, int y, int x) {
