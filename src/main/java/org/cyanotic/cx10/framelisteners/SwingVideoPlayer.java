@@ -5,6 +5,7 @@ import org.cyanotic.cx10.api.ImageListener;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -27,7 +28,7 @@ public class SwingVideoPlayer extends ImageListener {
     }
 
     @Override
-    public void imageReceived(Image image) {
+    public void imageReceived(BufferedImage image) {
         try {
             SwingUtilities.invokeAndWait(() -> canvasFrame.showImage(image));
         } catch (InterruptedException | InvocationTargetException e) {
