@@ -21,14 +21,18 @@ public class VideoProcessor extends ImageListener implements Processor {
     private static final ColorModel RED_COLOR_MODEL = new DirectColorModel(8, 0x000000ff, 0, 0, 0);
     private static final ColorModel GREEN_COLOR_MODEL = new DirectColorModel(8, 0, 0x000000ff, 0, 0);
     private static final ColorModel BLUE_COLOR_MODEL = new DirectColorModel(8, 0, 0, 0x000000ff, 0);
+
     private final SwingVideoPlayer videoPlayer;
     private ProcessedImage lastProcessedImage;
     private Gate gate;
     private int mean, threshold = 127;
 
-    public VideoProcessor(ScheduledExecutorService executor) {
+    private ColorModel currentColor;
+
+    public VideoProcessor(ScheduledExecutorService executor, Color color) {
         super(executor);
         videoPlayer = new SwingVideoPlayer(executor);
+        setColor(color);
     }
 
     @Override
@@ -63,8 +67,19 @@ public class VideoProcessor extends ImageListener implements Processor {
     }
 
     @Override
-    public void setColor(Color color) {
+    public void capture() {
+        // todo: save last image
+    }
 
+    @Override
+    public void setColor(Color color) {
+        if (color == Color.RED) {
+            currentColor = RED_COLOR_MODEL;
+        } else if (color == Color.BLUE) {
+            currentColor = BLUE_COLOR_MODEL;
+        } else if (color == Color.GREEN) {
+            currentColor = GREEN_COLOR_MODEL;
+        }
     }
 
     private void updateMean(ProcessedImage processedImage) {

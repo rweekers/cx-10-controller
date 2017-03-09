@@ -18,7 +18,12 @@ public class GuiProcessor implements Processor {
     }
 
     @Override
-    public void setColor(final String color) {
+    public void capture() {
+        // nothing
+    }
+
+    @Override
+    public void setColor(final Color color) {
         // todo
     }
 }

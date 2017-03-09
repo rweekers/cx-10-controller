@@ -26,14 +26,11 @@ public class ProcessorController implements Controller {
     private boolean hasLanded = false;
 
     private final Processor processor;
-    private final Capturer capturer;
 
     private Command command = new Command(0, 0, 0, 0, false, false);
 
-    public ProcessorController(Processor processor, Capturer capturer) {
+    public ProcessorController(Processor processor) {
         this.processor = processor;
-        this.capturer = capturer;
-
         this.processor.setColor(CAPTURE_COLOR);
     }
 
@@ -61,8 +58,9 @@ public class ProcessorController implements Controller {
         }
 
         if (!captured) {
-            capturer.capture();
+            processor.capture();
             processor.setColor(LAND_COLOR);
+
             captured = true;
 
             return IDLE_COMMAND;
