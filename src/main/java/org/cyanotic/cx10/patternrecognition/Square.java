@@ -1,5 +1,6 @@
 package org.cyanotic.cx10.patternrecognition;
 
+import nl.craftsmen.cx10.measure.MeasuredValuesCache;
 import org.bytedeco.javacpp.IntPointer;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core;
@@ -160,7 +161,7 @@ public class Square {
         return (dx1 * dx2 + dy1 * dy2) / Math.sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
     }
 
-    public boolean hasCorrectColor(IplImage iplImage, CvSeq squares) throws IOException {
+    public boolean hasCorrectColor(IplImage iplImage, CvSeq squares, MeasuredValuesCache measuredValues) throws IOException {
         IplImage cpy = cvCloneImage(iplImage);
         CvSlice slice = new CvSlice(squares);
         System.out.println("total vertices: " + squares.total());
@@ -184,13 +185,43 @@ public class Square {
 
                 gevonden = hasColor(iplImage, rect.position(0));
                 if (gevonden) {
-                    cvPolyLine(cpy, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
+                    bepaalMeasurement(rect.position(0), measuredValues);
+                    measuredValues.measurementAvailable = true;
+                    // cvPolyLine(cpy, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
               }
             }
         }
-        ImageIO.write(ImageConverter.convertImage(cpy), "png", new File("image-copy.png"));
+        // ImageIO.write(ImageConverter.convertImage(cpy), "png", new File("image-copy.png"));
 
         return gevonden;
+    }
+
+    private void bepaalMeasurement(CvPoint position, MeasuredValuesCache measuredValues) {
+        // links boven
+        CvPoint point = position;
+        int min_x = point.x();
+        int min_y = point.y();
+
+        //links onder
+        point = position.position(1);
+        min_x = Math.max(min_x, point.x());
+        int max_y = point.y();
+
+        // rechts onder
+        point = position.position(2);
+        int max_x = point.x();
+        max_y = Math.min(max_y, point.y());
+
+        // rechts boven
+        point = position.position(3);
+        max_x = Math.min(max_x, point.x());
+        min_y = Math.max(min_y, point.y());
+
+        measuredValues.x = (min_x + max_x )/2;
+        measuredValues.y = (min_y + max_y )/2;
+        measuredValues.breedte = Math.abs(max_x - min_x);
+        measuredValues.hoogteL = Math.abs(max_y - min_y);
+        measuredValues.hoogteR = Math.abs(max_y - min_y);
     }
 
     private boolean hasColor(IplImage iplImage, CvPoint position) {

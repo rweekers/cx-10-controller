@@ -37,7 +37,7 @@ public class RectangeDetector extends ImageListener {
             opencv_core.CvSeq squares = square.findSquares4(iplImage);
             int total = squares.total();
 
-            if (total >= 4 && square.hasCorrectColor(iplImage, squares)) {
+            if (total >= 4 && square.hasCorrectColor(iplImage, squares, measuredValues)) {
                 ImageIO.write((BufferedImage) image, "png", new File("image2-" + i++ + ".png"));
             }
         } catch (IOException e) {
