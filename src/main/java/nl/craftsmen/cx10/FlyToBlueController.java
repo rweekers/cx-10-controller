@@ -34,6 +34,7 @@ public class FlyToBlueController implements Controller {
     private PIDController xPIDController = new PIDController(gewensteX, 0);
     private PIDController afstandPidController = new PIDController(gewensteAfstand, 0);
     private boolean initialized = false;
+    private int initCounter = 0;
     private boolean geland = false;
 
     public FlyToBlueController(IMeasuredValues measureValuesCache) {
@@ -42,18 +43,18 @@ public class FlyToBlueController implements Controller {
 
 
     public int controlY() {
-        return yPIDController.doPID(measuredValues.getY());
+        return -1* yPIDController.doPID(measuredValues.getY());
     }
 
 
     private int controlX() {
-        return xPIDController.doPID(measuredValues.getX());
+        return -1* xPIDController.doPID(measuredValues.getX());
     }
 
     private int controlAfstand() {
         int afstand = measuredValues.getBreedte() * measuredValues.getHoogte();
         LOGGER.info("afstand: " + afstand);
-        return afstandPidController.doPID(afstand);
+        return -1* afstandPidController.doPID(afstand);
     }
 
 
@@ -81,15 +82,22 @@ public class FlyToBlueController implements Controller {
         }
 
         if (!initialized) {
-            initialized = true;
-            LOGGER.info("takeoff!!");
-            return TAKEOFF_COMMAND;
+            if (initCounter++ < 4) {
+                LOGGER.info("takeoff!!");
+                return TAKEOFF_COMMAND;
+            } else {
+                initialized = true;
+            }
+
         }
 
         if (measuredValues.measurementAvailable()) {
             if (targetInHetmidden()) {
+                LOGGER.info(" target in midden!!");
                 if (gewensteAfsstandBereikt()) {
+                    LOGGER.info(" gewenste afstand bereikt!! foto maken en landen");
                     //TODO bewaar foto
+                    geland = true;
                     return LAND_COMMAND;
                 }
 
@@ -108,9 +116,12 @@ public class FlyToBlueController implements Controller {
 
         }
 
+        if (geland) {
+            return null;
+        }
 
         //rotate...
-        LOGGER.info("rotate" );
+        LOGGER.info("rotate");
         return TURN_COMMAND;
 
 

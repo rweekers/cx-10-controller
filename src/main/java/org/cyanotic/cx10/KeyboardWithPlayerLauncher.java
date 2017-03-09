@@ -11,8 +11,8 @@ public class KeyboardWithPlayerLauncher {
     public static void main(String[] args) throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
         MeasuredValuesCache measuredValuesCache = new MeasuredValuesCache();
-        measuredValuesCache.x = 576 / 2;
-        measuredValuesCache.y = 300;
+        measuredValuesCache.x = 325;
+        measuredValuesCache.y = 288;
         measuredValuesCache.hoogteL = 250;
         measuredValuesCache.hoogteR = 250;
         measuredValuesCache.breedte = 100;
