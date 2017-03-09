@@ -53,9 +53,4 @@ public class FrameImageSource implements ImageSource {
     public int getPixel(int x, int y) {
         return getPixel(getPixelIndex(x, y));
     }
-
-    @Override
-    public int getRed(int pixel) {
-        return (pixel >> 16) & 0xFF;
-    }
 }

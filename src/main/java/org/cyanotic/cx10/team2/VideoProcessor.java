@@ -1,11 +1,8 @@
 package org.cyanotic.cx10.team2;
 
-import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameConverter;
+import org.bytedeco.javacv.CanvasFrame;
 import org.cyanotic.cx10.api.ImageListener;
-import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
@@ -22,16 +19,14 @@ public class VideoProcessor extends ImageListener implements Processor {
     private static final ColorModel GREEN_COLOR_MODEL = new DirectColorModel(8, 0, 0x000000ff, 0, 0);
     private static final ColorModel BLUE_COLOR_MODEL = new DirectColorModel(8, 0, 0, 0x000000ff, 0);
 
-    private final SwingVideoPlayer videoPlayer;
-    private ProcessedImage lastProcessedImage;
+    private final CanvasFrame detectedGroup = new CanvasFrame("Detected");
+    private Color color = Color.RED;
     private Gate gate;
-    private int mean, threshold = 127;
-
-    private ColorModel currentColor;
+    private ProcessedImage lastProcessedImage;
+    private int threshold = 100;
 
     public VideoProcessor(ScheduledExecutorService executor) {
         super(executor);
-        videoPlayer = new SwingVideoPlayer(executor);
     }
 
     @Override
@@ -41,20 +36,22 @@ public class VideoProcessor extends ImageListener implements Processor {
 
     @Override
     public void imageReceived(BufferedImage image) {
-        videoPlayer.imageReceived(image);
-
         ImageSource imageSource = new BufferedImageSource(image);
         if (gate == null) {
             gate = new Gate(imageSource.getWidth(), imageSource.getHeight(), 1);
         }
-        lastProcessedImage = new ProcessedImage(imageSource, gate, mean, threshold);
-        updateMean(lastProcessedImage);
-        updateThreshold(lastProcessedImage);
-        updateGate(lastProcessedImage);
+        lastProcessedImage = new ProcessedImage(imageSource, gate, color, threshold);
+//        updateMean(lastProcessedImage);
+//        updateThreshold(lastProcessedImage);
+        updateGate(imageSource.getWidth(), imageSource.getHeight(), lastProcessedImage);
 
-        gate.draw(image, 0xFF000000);
-        lastProcessedImage.getBrightestPixelGroup().draw(image, 0xFFF000F0);
-        videoPlayer.imageReceived(image);
+        PixelGroup brightestPixelGroup = lastProcessedImage.getDetectedPixelGroup();
+        if (brightestPixelGroup != null) {
+            BufferedImage render = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+            brightestPixelGroup.draw(render, 0xFF000000);
+            gate.draw(render, 0xFFF000F0);
+            detectedGroup.showImage(render);
+        }
     }
 
     @Override
@@ -79,40 +76,42 @@ public class VideoProcessor extends ImageListener implements Processor {
 
     @Override
     public void setColor(Color color) {
-        if (color == Color.RED) {
-            currentColor = RED_COLOR_MODEL;
-        } else if (color == Color.BLUE) {
-            currentColor = BLUE_COLOR_MODEL;
-        } else if (color == Color.GREEN) {
-            currentColor = GREEN_COLOR_MODEL;
-        }
-    }
-
-    private void updateMean(ProcessedImage processedImage) {
-        mean = (int) (processedImage.getSum() / gate.getPixelCount());
+        this.color = color;
     }
 
     private void updateThreshold(ProcessedImage processedImage) {
         // Update the threshold.
-        PixelGroup brightestGroup = processedImage.getBrightestPixelGroup();
-        if (brightestGroup == null) threshold = (int) (threshold * 0.9);
-        else if (threshold < brightestGroup.getMean() * 0.95)
-            threshold = (brightestGroup.getMean() + brightestGroup.getMax()) / 2;
+        PixelGroup pixelGroup = processedImage.getDetectedPixelGroup();
+        if (pixelGroup == null) {
+            threshold = (int) (threshold * 0.9);
+        } else if (threshold < pixelGroup.getMean() * 0.95) {
+            threshold = (pixelGroup.getMean() + pixelGroup.getMax()) / 2;
+        }
     }
 
-    private void updateGate(ProcessedImage processedImage) {
+    private void updateGate(int width, int height, ProcessedImage processedImage) {
         // Update the gate.
-        PixelGroup brightestGroup = processedImage.getBrightestPixelGroup();
-        if (brightestGroup == null ||
-                brightestGroup.getTop() > gate.getTop() + 5 ||
-                brightestGroup.getBottom() > gate.getBottom() - 5 ||
-                brightestGroup.getLeft() > gate.getLeft() + 5 ||
-                brightestGroup.getRight() > gate.getRight() - 5) this.gate = gate.resize(1.01);
-        else if (brightestGroup.getCount() > 50 &&
-                brightestGroup.getTop() + 10 >= gate.getTop() &&
-                brightestGroup.getBottom() - 10 <= gate.getBottom() &&
-                brightestGroup.getLeft() + 10 >= gate.getLeft() &&
-                brightestGroup.getRight() - 10 <= gate.getRight()) this.gate = gate.resize(0.99);
+        PixelGroup pixelGroup = processedImage.getDetectedPixelGroup();
+        if (pixelGroup == null && gate.getSize() < 1) {
+            this.gate = new Gate(width, height, gate.getSize() + 0.05);
+        } else {
+            double topDiff = pixelGroup.getTop() - gate.getTop();
+            double bottomDiff = gate.getBottom() - pixelGroup.getBottom();
+            double leftDiff = pixelGroup.getLeft() - gate.getLeft();
+            double rightDiff = gate.getRight() - pixelGroup.getRight();
+
+            double topFactor = topDiff / height;
+            double bottomFactor = bottomDiff / height;
+            double leftFactor = leftDiff / width;
+            double rightFactor = rightDiff / width;
+
+            double smallestVerticalFactor = Math.min(topFactor, bottomFactor);
+            double smallestHorizontalFactor = Math.min(leftFactor, rightFactor);
+            double smallestFactor = Math.min(smallestVerticalFactor, smallestHorizontalFactor);
+            double resizeFactor = 1 - smallestFactor;
+            double size = gate.getSize() * resizeFactor;
+            this.gate = new Gate(width, height, size);
+        }
     }
 
     private static BufferedImage gray(BufferedImage image) {

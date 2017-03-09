@@ -17,26 +17,27 @@ public class PixelGroup {
     public PixelGroup(ImageSource imageSource) {
         this.imageSource = imageSource;
         this.indices = new HashSet<>();
+        this.left = imageSource.getWidth();
+        this.top = imageSource.getHeight();
     }
 
-    public void add(int x, int y, int diff) {
-        add(imageSource.getPixelIndex(x, y), diff);
+    public void add(int x, int y, int pixel) {
+        add(imageSource.getPixelIndex(x, y), pixel);
     }
 
-    public void add(int index, int diff) {
-        int column = index % imageSource.getStride();
-        int line = index / imageSource.getStride();
+    public void add(int index, int pixel) {
+        Point pixelPoint = imageSource.getPixelPoint(index);
 
         indices.add(index);
-        sum += diff;
+        sum += pixel;
         count++;
-        min = (byte) Math.min(min, diff);
-        max = (byte) Math.max(max, diff);
+        min = (byte) Math.min(min, pixel);
+        max = (byte) Math.max(max, pixel);
 
-        left = Math.min(left, column);
-        right = Math.max(right, column);
-        top = Math.min(top, line);
-        bottom = Math.max(bottom, line);
+        left = (int) Math.min(left, pixelPoint.getX());
+        right = (int) Math.max(right, pixelPoint.getX());
+        top = (int) Math.min(top, pixelPoint.getY());
+        bottom = (int) Math.max(bottom, pixelPoint.getY());
     }
 
     public boolean contains(int x, int y) {

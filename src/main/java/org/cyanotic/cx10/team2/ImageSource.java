@@ -19,16 +19,14 @@ public interface ImageSource {
     int getBytesPerPixel();
 
     default int getPixelIndex(int x, int y) {
-        return y * getHeight() + x;
+        return y * getWidth() + x;
     }
 
     default Point getPixelPoint(int index) {
-        return new Point(index % getHeight(), index / getHeight());
+        return new Point(index % getWidth(), index / getWidth());
     }
 
     int getPixel(int index);
 
     int getPixel(int x, int y);
-
-    int getRed(int pixel);
 }

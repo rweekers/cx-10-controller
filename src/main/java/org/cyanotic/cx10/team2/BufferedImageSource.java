@@ -42,9 +42,4 @@ public class BufferedImageSource implements ImageSource {
     public int getPixel(int x, int y) {
         return bufferedImage.getRGB(x, y);
     }
-
-    @Override
-    public int getRed(int pixel) {
-        return (pixel >> 16) & 0xFF;
-    }
 }
