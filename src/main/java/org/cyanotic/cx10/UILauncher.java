@@ -5,6 +5,7 @@ import org.cyanotic.cx10.controllers.FlyInACircle;
 import org.cyanotic.cx10.controllers.HackatonController;
 import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
+import org.cyanotic.cx10.framelisteners.StubSensor;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
 import org.cyanotic.cx10.ui.MainWindow;
@@ -25,10 +26,11 @@ public class UILauncher {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
+        final HackatonController hackatonController = new HackatonController();
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new HackatonController();
+                return hackatonController;
             }
 
             @Override
@@ -50,6 +52,17 @@ public class UILauncher {
         });
 
         Collection<Supplier<FrameListener>> frameListeners = new ArrayList<>();
+        frameListeners.add(new Supplier<FrameListener>() {
+            @Override
+            public FrameListener get() {
+                return new StubSensor(hackatonController, executor);
+            }
+
+            @Override
+            public String toString() {
+                return "StubSensor";
+            }
+        });
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {

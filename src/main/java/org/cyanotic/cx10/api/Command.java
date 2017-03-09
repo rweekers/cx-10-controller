@@ -11,18 +11,20 @@ public class Command {
     private int throttle;
     private boolean takeOff;
     private boolean land;
+    private String name;
 
     public Command() {
-        this(0, 0, 0, 0, false, false);
+        this(0, 0, 0, 0, false, false, "");
     }
 
-    public Command(int pitch, int yaw, int roll, int throttle, boolean takeOff, boolean land) {
+    public Command(int pitch, int yaw, int roll, int throttle, boolean takeOff, boolean land, String name) {
         this.pitch = pitch;
         this.yaw = yaw;
         this.roll = roll;
         this.throttle = throttle;
         this.takeOff = takeOff;
         this.land = land;
+        this.name = name;
     }
 
     public int getPitch() {
@@ -96,6 +98,7 @@ public class Command {
     @Override
     public String toString() {
         return "Command{" +
+                "name=" + name +
                 "pitch=" + pitch +
                 ", yaw=" + yaw +
                 ", roll=" + roll +
