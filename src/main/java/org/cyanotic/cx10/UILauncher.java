@@ -1,12 +1,14 @@
 package org.cyanotic.cx10;
 
-import nl.craftsmen.cx10.FlyToBlue;
+import nl.craftsmen.cx10.FlyToBlueController;
+import nl.craftsmen.cx10.measure.MeasuredValuesCache;
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.controllers.FlyInACircle;
 import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
+import org.cyanotic.cx10.imagelisteners.RectangeDetector;
 import org.cyanotic.cx10.ui.MainWindow;
 
 import java.io.IOException;
@@ -24,15 +26,17 @@ public class UILauncher {
     public static void main(String[] args) throws IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
+        MeasuredValuesCache measuredValuesCache = new MeasuredValuesCache();
+
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new FlyToBlue();
+                return new FlyToBlueController(measuredValuesCache);
             }
             @Override
             public String toString() {
-                return "FlyToBlue";
+                return "FlyToBlueController";
             }
         });
         controllers.add(new Supplier<Controller>() {
@@ -80,6 +84,17 @@ public class UILauncher {
             @Override
             public String toString() {
                 return "VideoRecorder";
+            }
+        });
+        frameListeners.add(new Supplier<FrameListener>() {
+            @Override
+            public FrameListener get() {
+                return new RectangeDetector(executor, measuredValuesCache);
+            }
+
+            @Override
+            public String toString() {
+                return "RectangleDetector";
             }
         });
 

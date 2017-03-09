@@ -1,17 +1,21 @@
 package org.cyanotic.cx10;
 
-import org.cyanotic.cx10.controllers.Keyboard;
-import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-/**
- * Created by gerard on 5-3-17.
- */
+import nl.craftsmen.cx10.FlyToBlueKeyboard;
+import nl.craftsmen.cx10.measure.MeasuredValuesCache;
+import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
+
 public class KeyboardWithPlayerLauncher {
     public static void main(String[] args) throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
-        new CX10(executor, new Keyboard(), new SwingVideoPlayer(executor));
+        MeasuredValuesCache measuredValuesCache = new MeasuredValuesCache();
+        measuredValuesCache.x = 576 / 2;
+        measuredValuesCache.y = 300;
+        measuredValuesCache.hoogteL = 250;
+        measuredValuesCache.hoogteR = 250;
+        measuredValuesCache.breedte = 100;
+        new CX10(executor, new FlyToBlueKeyboard(measuredValuesCache), new SwingVideoPlayer(executor));
     }
 }
