@@ -28,6 +28,16 @@ public class UILauncher {
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
+                return new FlyToBlue();
+            }
+            @Override
+            public String toString() {
+                return "FlyToBlue";
+            }
+        });
+        controllers.add(new Supplier<Controller>() {
+            @Override
+            public Controller get() {
                 return new Keyboard();
             }
 
@@ -47,16 +57,7 @@ public class UILauncher {
                 return "FlyInACircle";
             }
         });
-        controllers.add(new Supplier<Controller>() {
-            @Override
-            public Controller get() {
-                return new FlyToBlue();
-            }
-            @Override
-            public String toString() {
-                return "FlyToBlue";
-            }
-        });
+
 
         Collection<Supplier<FrameListener>> frameListeners = new ArrayList<>();
         frameListeners.add(new Supplier<FrameListener>() {

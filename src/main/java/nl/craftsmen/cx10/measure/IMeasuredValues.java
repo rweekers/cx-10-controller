@@ -5,6 +5,8 @@ package nl.craftsmen.cx10.measure;
  */
 public interface IMeasuredValues {
 
+    default boolean measurementAvailable() {return false;};
+
     int getY();
     int getX();
     int getHoogteL();
@@ -14,5 +16,6 @@ public interface IMeasuredValues {
     default int getHoogte() {
         return (getHoogteL() + getHoogteR())/2;
     }
+
 
 }

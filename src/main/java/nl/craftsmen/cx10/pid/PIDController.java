@@ -188,7 +188,7 @@ public class PIDController {
     private float Kp=1.0f;          // proportional value determines the reaction to the current error
     private float Ki=0.0f;      // integral value determines the reaction based on the sum of recent errors
     private float Kd=0.0f;        // derivative value determines the reaction based on the rate at which the error has been changing
-    private int highLimit = 900;            // assuming control of motor speed and thereby max would be 900 deg/sec
+    private int highLimit = 128;            // assuming control of motor speed and thereby max would be 900 deg/sec
     private int lowLimit = -highLimit;
     private int previous_error = 0;
     private int deadband = 0;

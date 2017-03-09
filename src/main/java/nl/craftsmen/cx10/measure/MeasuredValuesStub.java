@@ -28,4 +28,9 @@ public class MeasuredValuesStub implements IMeasuredValues {
     public int getBreedte() {
         return 500;
     }
+
+    @Override
+    public boolean measurementAvailable() {
+        return true;
+    }
 }
