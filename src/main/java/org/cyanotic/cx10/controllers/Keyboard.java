@@ -48,33 +48,43 @@ public class Keyboard implements KeyEventDispatcher, Controller {
         int value = isPressed ? 127 : 0;
         switch (e.getKeyCode()) {
             case VK_W:
+                System.out.println("throttle: " + value);
                 command.setThrottle(value);
                 break;
             case VK_S:
+                System.out.println("throttle: " + value);
                 command.setThrottle(-value);
                 break;
             case VK_D:
+                System.out.println("yaw: " + value);
                 command.setYaw(value);
                 break;
             case VK_A:
+                System.out.println("yaw: " + value);
                 command.setYaw(-value);
                 break;
             case VK_I:
+                System.out.println("pitch: " + value);
                 command.setPitch(value);
                 break;
             case VK_K:
+                System.out.println("pitch: " + value);
                 command.setPitch(-value);
                 break;
             case VK_L:
+                System.out.println("roll: " + value);
                 command.setRoll(value);
                 break;
             case VK_J:
+                System.out.println("roll: " + value);
                 command.setRoll(-value);
                 break;
             case VK_UP:
+                System.out.println("takeoff: " + isPressed);
                 command.setTakeOff(isPressed);
                 break;
             case VK_DOWN:
+                System.out.println("takeoff: " + isPressed);
                 command.setLand(isPressed);
                 break;
         }

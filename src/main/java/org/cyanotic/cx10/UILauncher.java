@@ -1,5 +1,6 @@
 package org.cyanotic.cx10;
 
+import nl.craftsmen.cx10.FlyToBlue;
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.controllers.FlyInACircle;
 import org.cyanotic.cx10.controllers.Keyboard;
@@ -44,6 +45,16 @@ public class UILauncher {
             @Override
             public String toString() {
                 return "FlyInACircle";
+            }
+        });
+        controllers.add(new Supplier<Controller>() {
+            @Override
+            public Controller get() {
+                return new FlyToBlue();
+            }
+            @Override
+            public String toString() {
+                return "FlyToBlue";
             }
         });
 
