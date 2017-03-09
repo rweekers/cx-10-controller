@@ -32,13 +32,14 @@ public class RectangeDetector extends ImageListener {
     @Override
     public void imageReceived(BufferedImage image) {
         try {
+            ImageIO.write(image, "png", new File("temp.png"));
             opencv_core.IplImage iplImage = ImageConverter.convertImage(image);
             Square square = new Square();
             opencv_core.CvSeq squares = square.findSquares4(iplImage);
             int total = squares.total();
 
             if (total >= 4 && square.hasCorrectColor(iplImage, squares, measuredValues)) {
-                ImageIO.write((BufferedImage) image, "png", new File("image2-" + i++ + ".png"));
+                ImageIO.write(image, "png", new File("image2-" + i++ + ".png"));
             }
         } catch (IOException e) {
             throw new IllegalStateException("Er ging wat fout", e);

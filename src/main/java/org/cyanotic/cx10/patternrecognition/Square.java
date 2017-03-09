@@ -20,6 +20,8 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
  */
 public class Square {
 
+    public static int counter = 0;
+
     int thresh = 50;
     opencv_core.CvMemStorage storage;
 
@@ -162,14 +164,14 @@ public class Square {
     }
 
     public boolean hasCorrectColor(IplImage iplImage, CvSeq squares, MeasuredValuesCache measuredValues) throws IOException {
-        IplImage cpy = cvCloneImage(iplImage);
+//        IplImage cpy = cvCloneImage(iplImage);
         CvSlice slice = new CvSlice(squares);
         System.out.println("total vertices: " + squares.total());
 
         Set<String> algehad = new HashSet<>();
 
         boolean gevonden = false;
-        for (int i = 0; !gevonden && i < squares.total(); i += 4) {
+        for (int i = 0;  !gevonden && i < squares.total(); i += 4) {
 
             CvPoint rect = new CvPoint(4);
 
@@ -188,13 +190,14 @@ public class Square {
                     System.out.println("Blauwe rechthoek gevonden!");
                     bepaalMeasurement(rect.position(0), measuredValues);
                     measuredValues.measurementAvailable = true;
-                    // cvPolyLine(cpy, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
+                    cvPolyLine(iplImage, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
+                    ImageIO.write(ImageConverter.convertImage(iplImage), "png", new File("image-copy-" + counter++ + ".png"));
               } else {
                     System.out.println("Geen blauwe rechthoek gevonden!");
                 }
             }
         }
-        // ImageIO.write(ImageConverter.convertImage(cpy), "png", new File("image-copy.png"));
+
 
         return gevonden;
     }
@@ -248,27 +251,41 @@ public class Square {
         max_x = Math.min(max_x, point.x());
         min_y = Math.max(min_y, point.y());
 
+        if (min_x > max_x) {
+            int temp = max_x;
+            max_x = min_x;
+            min_x = temp;
+        }
+        if (min_y > max_y) {
+            int temp = max_y;
+            max_y = min_y;
+            min_y = temp;
+        }
         System.out.println("min_x: " + min_x);
         System.out.println("min_y: " + min_y);
         System.out.println("max_x: " + max_x);
         System.out.println("max_y: " + max_y);
 
         // links onder
-//        int gevonden = hasColor(iplImage, min_x, min_y) ? 1 : 0;
-//        gevonden += hasColor(iplImage, min_x, max_y)? 1 : 0;
-//        gevonden += hasColor(iplImage, max_x, min_y)? 1: 0;
-//        gevonden += hasColor(iplImage, max_x, max_y)? 1 : 0;
-        int gevonden = hasColor(iplImage, (min_x + max_x)/ 2, (min_y + max_y)/2) ? 1 : 0;
-        return gevonden >= 1;
+        int gevonden = hasColor(iplImage, min_x, min_y) ? 1 : 0;
+        gevonden += hasColor(iplImage, min_x, max_y)? 1 : 0;
+        gevonden += hasColor(iplImage, max_x, min_y)? 1: 0;
+        gevonden += hasColor(iplImage, max_x, max_y)? 1 : 0;
+        return gevonden >= 2 && hasColor(iplImage, (min_x + max_x)/ 2, (min_y + max_y)/2);
     }
 
     private boolean hasColor(IplImage iplImage, int y, int x) {
         CvScalar s;
         s = cvGet2D(iplImage, x, y);
-        System.out.println("R: " + s.val(2));
-        System.out.println("G: " + s.val(1));
-        System.out.println("B: " + s.val(0));
-        return s.val(2) < 100 && s.val(1) < 100 && s.val(0) > 100 ? true : false;
+        double red = s.val(2);
+        double green = s.val(1);
+        double blue = s.val(0);
+
+        System.out.println("R: " + red);
+        System.out.println("G: " + green);
+        System.out.println("B: " + blue);
+        return blue > green && blue > red && blue > 100 && red < 100;
+        // return s.val(2) < 100 && s.val(1) < 100 && s.val(0) > 100 ? true : false;
     }
 
 }

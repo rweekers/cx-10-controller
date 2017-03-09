@@ -18,7 +18,7 @@ public class SquareTest {
 
     @Test
     public void detectColor() throws Exception {
-        BufferedImage bufferedImage = ImageIO.read(new File("image2-4.png"));
+        BufferedImage bufferedImage = ImageIO.read(new File("image2-5.png"));
 
         opencv_core.IplImage iplImage = ImageConverter.convertImage(bufferedImage);
         Square square = new Square();
