@@ -1,10 +1,10 @@
 package org.cyanotic.cx10.controllers;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.bytedeco.javacpp.opencv_core;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class HackatonController implements Controller {
 
@@ -15,36 +15,17 @@ public class HackatonController implements Controller {
     private static final Command TURN_LEFT_COMMAND = new Command(0, -64, 0, 0, false, false, "turnleft");
     private static final Command FORWARD_COMMAND = new Command(64, 0, 0, 0, false, false, "forward");
     private static final Command BACKWARD_COMMAND = new Command(-64, 0, 0, 0, false, false, "backward");
+    private static final int DECELERATION = 1;
+    private final Command UP_COMMAND = new Command(0, 0, 0, 30, false, false, "backward");
     private static final int MAX_FLIGHT_TIME = 250;
 
     private boolean takenOff = false;
 
-    private boolean readyForStart = false;
+    private long currentFoundSize = 0;
     private int teller = 0;
+    private int throttle = 5;
 
-    private static int OFFSET = 150;
-
-    private Command currentCommand = TAKEOFF_COMMAND;
-
-    private static Map<Integer, Command> scenario = new HashMap<>();
-
-    private int index = 0;
-    public HackatonController() {
-//        addStep(TAKEOFF_COMMAND, 0);
-//        addStep(TURN_RIGHT_COMMAND, 25);
-//        addStep(IDLE_COMMAND, 25);
-//        addStep(TURN_LEFT_COMMAND, 25);
-//        addStep(IDLE_COMMAND, 25);
-//        addStep(FORWARD_COMMAND, 25);
-//        addStep(IDLE_COMMAND, 25);
-//        addStep(BACKWARD_COMMAND, 25);
-//        addStep(LAND_COMMAND, 1);
-    }
-
-    private void addStep(Command command, int duur) {
-        index = index + duur;
-        scenario.put(index, command);
-    }
+    private Command currentCommand;
 
     @Override
     public Command getCommand() {
@@ -54,26 +35,15 @@ public class HackatonController implements Controller {
             takenOff = true;
             return TAKEOFF_COMMAND;
         } else if (teller > MAX_FLIGHT_TIME) {
+            System.out.println("giving up...");
             return LAND_COMMAND;
         } else if (currentCommand != null) {
+            System.out.println("current command: " + currentCommand);
             return currentCommand;
         }
+        System.out.println("idle for now");
         return IDLE_COMMAND;
 
-//        if (readyForStart && !takenOff) {
-//            takenOff = true;
-//            System.out.println("taken off!");
-//            return TAKEOFF_COMMAND;
-//        } else if (teller  > 100) {
-//            return LAND_COMMAND;
-//        } else {
-//            teller++;
-//            return currentCommand != null ? currentCommand : IDLE_COMMAND;
-//        }
-    }
-
-    private int getNettoTeller() {
-        return teller - OFFSET;
     }
 
     @Override
@@ -82,11 +52,33 @@ public class HackatonController implements Controller {
     }
 
     public void onReceiveImageData(opencv_core.MatVector matVector) {
+        System.out.println("image data received!");
         if (matVector == null || matVector.size() == 0) {
-            currentCommand = TURN_RIGHT_COMMAND;
-        } else {
-            currentCommand = IDLE_COMMAND;
+            System.out.println("going up!");
+            currentCommand = createUpCommand();
+        } else if (currentFoundSize < matVector.size()) {
+            currentFoundSize = matVector.size();
+            currentCommand = createUpCommand();
+            System.out.println("getting closer...");
+            afremmen();
+        } else if (currentFoundSize >= matVector.size()) {
+            System.out.println("found it!");
+            //takepicture
+            currentCommand = LAND_COMMAND;
+
         }
+    }
+
+    private void afremmen() {
+        throttle = throttle - DECELERATION;
+        if (throttle < 0) {
+            throttle = 0;
+        }
+    }
+
+    private Command createUpCommand() {
+        return new Command(0, 0, 0, throttle, false, false, "upCommand");
+
     }
 
 }

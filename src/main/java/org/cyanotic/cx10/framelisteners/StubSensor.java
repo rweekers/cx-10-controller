@@ -20,6 +20,7 @@ public class StubSensor extends ImageListener {
     }
 
     @Override public void imageReceived(final BufferedImage image) {
+        System.out.println("image received!");
         opencv_core.IplImage iplImage = convert(image);
         opencv_core.Mat matImage = new opencv_core.Mat(iplImage);
         opencv_core.MatVector vector = new opencv_core.MatVector();
@@ -28,7 +29,7 @@ public class StubSensor extends ImageListener {
         opencv_core.Mat maskedMat = new opencv_core.Mat();
         opencv_imgproc.threshold(greyMat, maskedMat, 0, 255, opencv_imgproc.CV_THRESH_BINARY_INV | opencv_imgproc.CV_THRESH_OTSU);
         opencv_imgproc.findContours(maskedMat, vector, opencv_imgproc.CV_SHAPE_RECT, opencv_imgproc.CHAIN_APPROX_TC89_L1);
-
+        System.out.println("sending image data to controller");
         //vertel iets aan controller
         hackatonController.onReceiveImageData(vector);
 
