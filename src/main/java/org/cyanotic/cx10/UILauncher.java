@@ -28,23 +28,24 @@ public class UILauncher {
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new Keyboard();
-            }
-
-            @Override
-            public String toString() {
-                return "Keyboard";
-            }
-        });
-        controllers.add(new Supplier<Controller>() {
-            @Override
-            public Controller get() {
                 return new HackatonController();
             }
 
             @Override
             public String toString() {
                 return "Hackaton";
+            }
+        });
+
+        controllers.add(new Supplier<Controller>() {
+            @Override
+            public Controller get() {
+                return new Keyboard();
+            }
+
+            @Override
+            public String toString() {
+                return "Keyboard";
             }
         });
 
