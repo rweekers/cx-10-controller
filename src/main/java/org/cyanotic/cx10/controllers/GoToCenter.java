@@ -15,7 +15,7 @@ public class GoToCenter implements Controller {
     private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false);
     private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true);
 
-    private static final Command NOTHING = new Command(0, 0, 0, 1, false, false);
+    private static final Command NOTHING = new Command(0, 0, 0, 0, false, false);
 
     private static final Command TURN_COMMAND = new Command(0, 50, 0, 1, false, false);
 
@@ -25,7 +25,7 @@ public class GoToCenter implements Controller {
 
     private int timer = 500;
 
-    private final static int SAMPLE_RATE = 100;
+    private final static int SAMPLE_RATE = 10;
     private int thingy = 0;
 
     public GoToCenter(FindColor finder) {
@@ -39,24 +39,31 @@ public class GoToCenter implements Controller {
 
     @Override
     public Command getCommand() {
+        opencv_core.CvPoint toDistance = finder.getDistanceToCenter();
+
+        if (toDistance == null) {
+            return NOTHING;
+        }
+
         if (!initialized) {
             initialized = true;
             return TAKEOFF_COMMAND;
         }
 
-        opencv_core.CvPoint toDistance = finder.getDistanceToCenter();
-
-        if (toDistance == null || thingy++ % SAMPLE_RATE == 0) {
+        if (thingy++ <= 10) {
+            System.out.println("NOTHING");
             return NOTHING;
         }
 
         if (timer-- <= 0) {
+            System.out.println("LAND");
             return LAND_COMMAND;
         }
 
+        System.out.println("Timer: " + timer + ". Distance: " + toDistance);
 
-        System.out.println("Timer: " + timer + ". Distance: " + toDistance.x());
+        return new Command(0, 0, toDistance.x() > 0 ? 20 : -20, toDistance.y() > 0 ? -25 : 0, false, false);
+        //}
 
-        return new Command(0, 0, toDistance.x() > 0 ? 10 : -10, 1, false, false);
     }
 }

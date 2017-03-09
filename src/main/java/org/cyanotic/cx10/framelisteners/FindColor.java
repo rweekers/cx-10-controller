@@ -52,12 +52,12 @@ public class FindColor extends SwingVideoPlayer {
         posX = (int) (mom10 / area);
         posY = (int) (mom01 / area);
 
-        // only if its a valid position
-        if (posX > 0 && posY > 0) {
-            paint(iplImage, posX, posY);
-        }
-
-        super.imageReceived(java2dConverter.getBufferedImage(iplConverter.convert(iplImage), 1));
+//        // only if its a valid position
+//        if (posX > 0 && posY > 0) {
+//            paint(iplImage, posX, posY);
+//        }
+//
+//        super.imageReceived(java2dConverter.getBufferedImage(iplConverter.convert(iplImage), 1));
     }
 
     public opencv_core.CvPoint getDistanceToCenter() {

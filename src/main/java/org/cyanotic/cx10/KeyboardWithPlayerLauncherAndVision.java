@@ -1,8 +1,7 @@
 package org.cyanotic.cx10;
 
-import org.cyanotic.cx10.controllers.GoToCenter;
+import org.cyanotic.cx10.controllers.GoogleVisionController;
 import org.cyanotic.cx10.controllers.Keyboard;
-import org.cyanotic.cx10.framelisteners.FindColor;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 
 import java.util.concurrent.Executors;
@@ -11,12 +10,9 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Created by gerard on 5-3-17.
  */
-public class KeyboardWithPlayerLauncher {
+public class KeyboardWithPlayerLauncherAndVision {
     public static void main(String[] args) throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
-        FindColor finder = new FindColor(executor);
-        new CX10(executor, new GoToCenter(finder), finder);
-//        new CX10(executor, new Keyboard(), finder);
-
+        new CX10(executor, new Keyboard(), new GoogleVisionController.GoogleVisionListener(executor));
     }
 }
