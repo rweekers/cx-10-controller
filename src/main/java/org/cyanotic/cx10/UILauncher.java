@@ -2,6 +2,7 @@ package org.cyanotic.cx10;
 
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.controllers.FlyInACircle;
+import org.cyanotic.cx10.controllers.HackatonController;
 import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
@@ -38,12 +39,12 @@ public class UILauncher {
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new FlyInACircle();
+                return new HackatonController();
             }
 
             @Override
             public String toString() {
-                return "FlyInACircle";
+                return "Hackaton";
             }
         });
 
