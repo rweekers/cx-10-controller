@@ -6,8 +6,7 @@ import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
-import org.cyanotic.cx10.team2.GuiProcessor;
-import org.cyanotic.cx10.team2.ProcessorController;
+import org.cyanotic.cx10.team2.*;
 import org.cyanotic.cx10.team2.ui.DeltaFrame;
 import org.cyanotic.cx10.ui.MainWindow;
 
@@ -30,14 +29,18 @@ public class UILauncher {
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                final GuiProcessor processor = new GuiProcessor(new DeltaFrame());
+                //final GuiProcessor processor = new GuiProcessor(new DeltaFrame());
 
-                return new ProcessorController(processor);
+                return new ProcessorController(
+                        new VideoProcessor(executor),
+                        Color.RED,
+                        Color.BLUE
+                );
             }
 
             @Override
             public String toString() {
-                return "Team 2 GUI processor controller";
+                return "Team 2 Capture Red - Return Blue";
             }
         });
         controllers.add(new Supplier<Controller>() {
@@ -73,17 +76,6 @@ public class UILauncher {
             @Override
             public String toString() {
                 return "SwingVideoPlayer";
-            }
-        });
-        frameListeners.add(new Supplier<FrameListener>() {
-            @Override
-            public FrameListener get() {
-                return new VideoRecorder();
-            }
-
-            @Override
-            public String toString() {
-                return "VideoRecorder";
             }
         });
         frameListeners.add(new Supplier<FrameListener>() {

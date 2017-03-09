@@ -18,8 +18,8 @@ public class ProcessorController implements Controller {
     private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true);
     private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, false, false);
 
-    private static final Color CAPTURE_COLOR = Color.RED;
-    private static final Color LAND_COLOR = Color.BLUE;
+    private final Color captureColor;
+    private final Color landColor;
 
     private boolean initialized = false;
     private boolean captured = false;
@@ -29,9 +29,12 @@ public class ProcessorController implements Controller {
 
     private Command command = new Command(0, 0, 0, 0, false, false);
 
-    public ProcessorController(Processor processor) {
+    public ProcessorController(Processor processor, Color captureColor, Color landColor) {
         this.processor = processor;
-        this.processor.setColor(CAPTURE_COLOR);
+        this.captureColor = captureColor;
+        this.landColor = landColor;
+
+        this.processor.setColor(this.captureColor);
     }
 
     @Override
@@ -59,7 +62,7 @@ public class ProcessorController implements Controller {
 
         if (!captured) {
             processor.capture();
-            processor.setColor(LAND_COLOR);
+            processor.setColor(landColor);
 
             captured = true;
 

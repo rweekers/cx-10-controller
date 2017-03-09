@@ -29,10 +29,9 @@ public class VideoProcessor extends ImageListener implements Processor {
 
     private ColorModel currentColor;
 
-    public VideoProcessor(ScheduledExecutorService executor, Color color) {
+    public VideoProcessor(ScheduledExecutorService executor) {
         super(executor);
         videoPlayer = new SwingVideoPlayer(executor);
-        setColor(color);
     }
 
     @Override
