@@ -25,6 +25,7 @@ public class FlyToBlueController implements Controller {
     int gewensteY = 576 / 2;
     int gewensteX = 720 / 2;
     int gewensteAfstand = 250 * 100;
+    int gewensteVerhouding = 707; //0.707
     long flytime = 0; //flytime in milleseconds
     long startTime = System.currentTimeMillis();
 
@@ -33,8 +34,11 @@ public class FlyToBlueController implements Controller {
     private PIDController yPIDController = new PIDController(gewensteY, 0);
     private PIDController xPIDController = new PIDController(gewensteX, 0);
     private PIDController afstandPidController = new PIDController(gewensteAfstand, 0);
+    private PIDController rechtErvoorPidController = new PIDController(gewensteVerhouding, 0);
     private boolean initialized = false;
+    private int initCounter = 0;
     private boolean geland = false;
+    private int vorigeVerhouding;
 
     public FlyToBlueController(IMeasuredValues measureValuesCache) {
         measuredValues = measureValuesCache;
@@ -42,18 +46,28 @@ public class FlyToBlueController implements Controller {
 
 
     public int controlY() {
-        return yPIDController.doPID(measuredValues.getY());
+        return -1 * yPIDController.doPID(measuredValues.getY());
     }
 
 
     private int controlX() {
-        return xPIDController.doPID(measuredValues.getX());
+        return -1 * xPIDController.doPID(measuredValues.getX());
     }
 
     private int controlAfstand() {
         int afstand = measuredValues.getBreedte() * measuredValues.getHoogte();
         LOGGER.info("afstand: " + afstand);
-        return afstandPidController.doPID(afstand);
+        return -1 * afstandPidController.doPID(afstand);
+    }
+
+    private int controlRechtErvoor() {
+        if (vorigeVerhouding > measuredValues.getVerhouding()) {
+            return xPIDController.doPID(measuredValues.getVerhouding());
+
+        } else {
+            return -1 * xPIDController.doPID(measuredValues.getVerhouding());
+        }
+
     }
 
 
@@ -81,15 +95,28 @@ public class FlyToBlueController implements Controller {
         }
 
         if (!initialized) {
-            initialized = true;
-            LOGGER.info("takeoff!!");
-            return TAKEOFF_COMMAND;
+            if (initCounter++ < 4) {
+                LOGGER.info("takeoff!!");
+                return TAKEOFF_COMMAND;
+            } else {
+                initialized = true;
+            }
+
         }
 
         if (measuredValues.measurementAvailable()) {
             if (targetInHetmidden()) {
+                LOGGER.info(" target in midden!!");
                 if (gewensteAfsstandBereikt()) {
+                    if ((measuredValues.getVerhouding() - gewensteVerhouding) < 100 ) {
+                        int pitch = rechtErvoorPidController.doPID(measuredValues.getVerhouding());
+                        LOGGER.info("pitch:" + pitch);
+                        return new Command(pitch, 0, 0, 0, false, false);
+                    }
+
+                    LOGGER.info(" gewenste afstand bereikt en recht ervoor !! foto maken en landen");
                     //TODO bewaar foto
+                    geland = true;
                     return LAND_COMMAND;
                 }
 
@@ -108,9 +135,12 @@ public class FlyToBlueController implements Controller {
 
         }
 
+        if (geland) {
+            return null;
+        }
 
         //rotate...
-        LOGGER.info("rotate" );
+        LOGGER.info("rotate");
         return TURN_COMMAND;
 
 

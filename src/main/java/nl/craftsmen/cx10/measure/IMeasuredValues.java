@@ -18,4 +18,7 @@ public interface IMeasuredValues {
     }
 
 
+    default int getVerhouding() {
+        return 1000*getHoogte()/getBreedte();
+    }
 }
