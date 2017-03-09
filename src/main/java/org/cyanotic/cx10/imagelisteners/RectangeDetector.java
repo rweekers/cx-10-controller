@@ -1,15 +1,11 @@
 package org.cyanotic.cx10.imagelisteners;
 
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_imgcodecs;
-import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.cyanotic.cx10.api.ImageListener;
 import org.cyanotic.cx10.patternrecognition.Square;
 import org.cyanotic.cx10.utils.ImageConverter;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -35,13 +31,14 @@ public class RectangeDetector extends ImageListener {
             int total = squares.total();
 
             if (total >= 4 && square.hasCorrectColor(iplImage, squares)) {
-                ImageIO.write((BufferedImage) image, "png", new File("image-" + i++ + ".png"));
+                ImageIO.write((BufferedImage) image, "png", new File("image2-" + i++ + ".png"));
             }
         } catch (IOException e) {
             throw new IllegalStateException("Er ging wat fout", e);
         }
 
     }
+
     @Override
     public void close() throws IOException {
 

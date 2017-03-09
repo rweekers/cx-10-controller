@@ -185,7 +185,7 @@ public class Square {
                 gevonden = hasColor(iplImage, rect.position(0));
                 if (gevonden) {
                     cvPolyLine(cpy, rect.position(0), count, 1, 1, CV_RGB(0, 255, 0), 3, CV_AA, 0);
-                }
+              }
             }
         }
         ImageIO.write(ImageConverter.convertImage(cpy), "png", new File("image-copy.png"));
@@ -194,37 +194,46 @@ public class Square {
     }
 
     private boolean hasColor(IplImage iplImage, CvPoint position) {
-        int min_x = position.x();
-        int min_y = position.y();
-        int max_x = position.x();
-        int max_y = position.y();
+        // links boven
+        CvPoint point = position;
+        int min_x = point.x();
+        int min_y = point.y();
 
-        for (int i= 1; i < 4; i++) {
-            CvPoint point = position.position(i);
-            int x = point.x();
-            int y = point.y();
+        //links onder
+        point = position.position(1);
+        min_x = Math.max(min_x, point.x());
+        int max_y = point.y();
 
-            min_x = Math.min(min_x, x);
-            max_x = Math.max(max_x, x);
+        // rechts onder
+        point = position.position(2);
+        int max_x = point.x();
+        max_y = Math.min(max_y, point.y());
 
-            min_y = Math.min(min_y, y);
-            max_y = Math.max(max_y, y);
-        }
+        // rechts boven
+        point = position.position(3);
+        max_x = Math.min(max_x, point.x());
+        min_y = Math.max(min_y, point.y());
 
-        CvScalar s, c;
+        System.out.println("min_x: " + min_x);
+        System.out.println("min_y: " + min_y);
+        System.out.println("max_x: " + max_x);
+        System.out.println("max_y: " + max_y);
 
-        boolean gevonden = true;
-        for (int i = min_x; gevonden && i < max_x; i++) {
-            for (int j = min_y; gevonden && j < max_y; j++) {
-                s = cvGet2D(iplImage, i,j);
-                if (s.val(0) < 50 && s.val(1) > 100 && s.val(2) < 100) {
-                    gevonden = true;
-                } else {
-                    gevonden = false;
-                }
-            }
-        }
-        return gevonden;
+        // links onder
+        int gevonden = hasColor(iplImage, min_x, min_y) ? 1 : 0;
+        gevonden += hasColor(iplImage, min_x, max_y)? 1 : 0;
+        gevonden += hasColor(iplImage, max_x, min_y)? 1: 0;
+        gevonden += hasColor(iplImage, max_x, max_y)? 1 : 0;
+        return gevonden >= 2;
+    }
+
+    private boolean hasColor(IplImage iplImage, int y, int x) {
+        CvScalar s;
+        s = cvGet2D(iplImage, x, y);
+        System.out.println("R: " + s.val(2));
+        System.out.println("G: " + s.val(1));
+        System.out.println("B: " + s.val(0));
+        return s.val(2) < 100 && s.val(1) < 100 && s.val(0) > 100 ? true : false;
     }
 
 }
