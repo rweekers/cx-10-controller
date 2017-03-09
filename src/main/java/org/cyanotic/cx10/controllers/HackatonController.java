@@ -1,10 +1,10 @@
 package org.cyanotic.cx10.controllers;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bytedeco.javacpp.opencv_core;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class HackatonController implements Controller {
 
@@ -81,8 +81,8 @@ public class HackatonController implements Controller {
         // do nothing
     }
 
-    public void onReceiveImageData(opencv_core.KeyPointVector keyPointVector) {
-        if (keyPointVector == null || keyPointVector.size() == 0) {
+    public void onReceiveImageData(opencv_core.MatVector matVector) {
+        if (matVector == null || matVector.size() == 0) {
             currentCommand = TURN_RIGHT_COMMAND;
         } else {
             currentCommand = IDLE_COMMAND;
