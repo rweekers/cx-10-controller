@@ -1,26 +1,24 @@
 package org.cyanotic.cx10.team2;
 
-import org.cyanotic.cx10.team2.ui.Delta;
-
-import java.awt.*;
+import org.cyanotic.cx10.team2.ui.DeltaFrame;
 
 /**
  * Created by dirkluijk on 09-03-17.
  */
 public class GuiProcessor implements Processor {
-    private Delta deltaWindow;
+    private DeltaFrame deltaFrame;
 
-    public GuiProcessor(final Delta deltaWindow) {
-        this.deltaWindow = deltaWindow;
+    public GuiProcessor(final DeltaFrame deltaFrame) {
+        this.deltaFrame = deltaFrame;
     }
 
     @Override
-    public Point getDelta() {
-        return deltaWindow.getDelta();
+    public Delta getDelta() {
+        return deltaFrame.getDelta();
     }
 
     @Override
-    public int getScale() {
-        return deltaWindow.getScale();
+    public void setColor(final String color) {
+        // todo
     }
 }

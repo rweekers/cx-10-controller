@@ -3,7 +3,6 @@ package org.cyanotic.cx10.team2;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
 
-import java.awt.*;
 import java.io.IOException;
 
 /**
@@ -11,20 +10,31 @@ import java.io.IOException;
  */
 public class ProcessorController implements Controller {
 
-    private static final int YAW_CORRECTION_VALUE = 60;
-    private static final int THROTTLE_CORRECTION_VALUE = 60;
-    private static final int PITCH_CORRECTION_VALUE = 80;
+    private static final int YAW_CORRECTION_VALUE = 50;
+    private static final int THROTTLE_CORRECTION_VALUE = 50;
+    private static final int PITCH_CORRECTION_VALUE = 50;
 
     private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false);
+    private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true);
+    private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, false, false);
+
+    private static final String CAPTURE_COLOR = "red";
+    private static final String LAND_COLOR = "blue";
 
     private boolean initialized = false;
+    private boolean captured = false;
+    private boolean hasLanded = false;
 
     private final Processor processor;
+    private final Capturer capturer;
 
     private Command command = new Command(0, 0, 0, 0, false, false);
 
-    public ProcessorController(Processor processor) {
+    public ProcessorController(Processor processor, Capturer capturer) {
         this.processor = processor;
+        this.capturer = capturer;
+
+        this.processor.setColor(CAPTURE_COLOR);
     }
 
     @Override
@@ -34,14 +44,43 @@ public class ProcessorController implements Controller {
 
     @Override
     public Command getCommand() {
+
+        // not init
         if (!initialized) {
             initialized = true;
+
             return TAKEOFF_COMMAND;
         }
 
-        Point delta = processor.getDelta();
+        if (captured && hasLanded) {
+            return IDLE_COMMAND;
+        }
 
-        // todo: zet de delta om in een beweging
+        if (!searchCompleted()) {
+            return createSearchCommand();
+        }
+
+        if (!captured) {
+            capturer.capture();
+            processor.setColor(LAND_COLOR);
+            captured = true;
+
+            return IDLE_COMMAND;
+        }
+
+        if (!hasLanded) {
+            hasLanded = true;
+
+            return LAND_COMMAND;
+        }
+
+        // don't know that to do next
+        return IDLE_COMMAND;
+    }
+
+    private Command createSearchCommand() {
+        Delta delta = processor.getDelta();
+
         if (delta.getX() < 0) {
             // rotate left
             command.setYaw(-YAW_CORRECTION_VALUE);
@@ -60,22 +99,26 @@ public class ProcessorController implements Controller {
             command.setThrottle(-THROTTLE_CORRECTION_VALUE);
         } else if (delta.getY() > 0) {
             // go higher
-            command.setThrottle(THROTTLE_CORRECTION_VALUE);
+            command.setThrottle(THROTTLE_CORRECTION_VALUE + 20);
         }
 
         // if need to come closer
-        if (processor.getScale() < 0 && Math.abs(delta.getX()) < 5) {
+        if (delta.getScale() < 0 && Math.abs(delta.getX()) < 5) {
             // need to come closer
             command.setPitch(PITCH_CORRECTION_VALUE);
 
-        } else if (processor.getScale() > 0) {
+        } else if (delta.getScale() > 0) {
             // need to go backwards
             command.setPitch(-PITCH_CORRECTION_VALUE);
         }
 
-//        command.setLand(takeOffLandingProvider.shouldLand());
-//        command.setTakeOff(takeOffLandingProvider.shouldTakeOff());
-
         return command;
+    }
+
+    private boolean searchCompleted() {
+        Delta delta = processor.getDelta();
+
+        return false;
+        //return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
     }
 }

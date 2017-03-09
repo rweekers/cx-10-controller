@@ -7,8 +7,9 @@ import org.cyanotic.cx10.api.FrameListener;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
 import org.cyanotic.cx10.team2.GuiProcessor;
+import org.cyanotic.cx10.team2.ImageCapturer;
 import org.cyanotic.cx10.team2.ProcessorController;
-import org.cyanotic.cx10.team2.ui.Delta;
+import org.cyanotic.cx10.team2.ui.DeltaFrame;
 import org.cyanotic.cx10.ui.MainWindow;
 
 import java.io.IOException;
@@ -30,9 +31,9 @@ public class UILauncher {
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                final GuiProcessor processor = new GuiProcessor(new Delta());
+                final GuiProcessor processor = new GuiProcessor(new DeltaFrame());
 
-                return new ProcessorController(processor);
+                return new ProcessorController(processor, new ImageCapturer(executor));
             }
 
             @Override

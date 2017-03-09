@@ -6,14 +6,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
-/**
- * Created by gerard on 8-3-17.
- */
-public class VideoProcessor extends ImageListener implements Processor {
+public class ImageCapturer extends ImageListener implements Capturer {
 
-    protected VideoProcessor(ExecutorService executor) {
+    public ImageCapturer(ExecutorService executor) {
         super(executor);
     }
+
+    private BufferedImage lastImage;
 
     @Override
     public void close() throws IOException {
@@ -22,16 +21,14 @@ public class VideoProcessor extends ImageListener implements Processor {
 
     @Override
     public void imageReceived(BufferedImage image) {
-
+        lastImage = image;
     }
 
-    @Override
-    public Delta getDelta() {
-        return null;
-    }
+    public void capture() {
+        if (lastImage == null) {
+            return;
+        }
 
-    @Override
-    public void setColor(final String color) {
-        // todo set the color
+        // todo: save the last image
     }
 }
