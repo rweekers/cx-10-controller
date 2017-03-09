@@ -11,6 +11,8 @@ import org.cyanotic.cx10.ui.MainWindow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
 /**
@@ -19,6 +21,8 @@ import java.util.function.Supplier;
 public class UILauncher {
 
     public static void main(String[] args) throws IOException {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
+
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
         controllers.add(new Supplier<Controller>() {
             @Override
@@ -47,7 +51,7 @@ public class UILauncher {
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {
-                return new SwingVideoPlayer();
+                return new SwingVideoPlayer(executor);
             }
 
             @Override
@@ -67,6 +71,6 @@ public class UILauncher {
             }
         });
 
-        new MainWindow(controllers, frameListeners);
+        new MainWindow(executor, controllers, frameListeners);
     }
 }

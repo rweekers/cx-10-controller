@@ -4,6 +4,7 @@ import org.cyanotic.cx10.utils.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -12,7 +13,7 @@ import java.net.InetAddress;
 /**
  * Created by cyanotic on 19/11/2016.
  */
-public class AbstractUDPConnection implements AutoCloseable {
+public class AbstractUDPConnection implements Closeable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private final DatagramSocket socket;
@@ -20,6 +21,7 @@ public class AbstractUDPConnection implements AutoCloseable {
     private final int port;
 
     public AbstractUDPConnection(String host, int port) throws IOException {
+        logger.info("Connecting to {}:{} (UDP)", host, port);
         this.host = InetAddress.getByName(host);
         this.port = port;
         this.socket = new DatagramSocket();

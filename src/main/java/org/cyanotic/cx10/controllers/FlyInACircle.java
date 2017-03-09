@@ -13,7 +13,7 @@ public class FlyInACircle implements Controller {
     private boolean initialized = false;
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         // do nothing
     }
 
