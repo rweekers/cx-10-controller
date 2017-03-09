@@ -3,7 +3,7 @@ package nl.craftsmen.cx10.measure;
 /**
  * Created by gerlo on 09/03/2017.
  */
-public class MeasureValuesCache implements IMeasuredValues {
+public class MeasuredValuesCache implements IMeasuredValues {
 
     public int x;
     public int y;

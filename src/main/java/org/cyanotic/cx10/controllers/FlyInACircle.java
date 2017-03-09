@@ -1,7 +1,5 @@
 package org.cyanotic.cx10.controllers;
 
-import nl.craftsmen.cx10.measure.IMeasuredValues;
-import nl.craftsmen.cx10.measure.MeasureValuesCache;
 import org.cyanotic.cx10.api.Command;
 import org.cyanotic.cx10.api.Controller;
 

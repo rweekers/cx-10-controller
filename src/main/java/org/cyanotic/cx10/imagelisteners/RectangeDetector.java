@@ -1,18 +1,13 @@
 
 package org.cyanotic.cx10.imagelisteners;
 
-import nl.craftsmen.cx10.measure.IMeasuredValues;
-import nl.craftsmen.cx10.measure.MeasureValuesCache;
+import nl.craftsmen.cx10.measure.MeasuredValuesCache;
 import org.bytedeco.javacpp.opencv_core;
-import org.bytedeco.javacpp.opencv_imgcodecs;
-import org.bytedeco.javacv.Java2DFrameConverter;
-import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.cyanotic.cx10.api.ImageListener;
 import org.cyanotic.cx10.patternrecognition.Square;
 import org.cyanotic.cx10.utils.ImageConverter;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -25,9 +20,9 @@ public class RectangeDetector extends ImageListener {
 
     public static int i = 0;
 
-    private MeasureValuesCache measuredValues ;
+    private MeasuredValuesCache measuredValues ;
 
-    public RectangeDetector(ExecutorService executorService, MeasureValuesCache measuredValues) {
+    public RectangeDetector(ExecutorService executorService, MeasuredValuesCache measuredValues) {
         super(executorService);
         this.measuredValues = measuredValues;
         this.measuredValues.measurementAvailable=false;

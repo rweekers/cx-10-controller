@@ -25,14 +25,14 @@ public class FlyToBlueController implements Controller {
     private static final Command TURN_COMMAND = new Command(0, 50, 0, 0, false, false);
 
 
-    int gewensteY = 500;
-    int gewensteX = 500;
-    int gewensteAfstand = 250000;
+    int gewensteY = 720 / 2;
+    int gewensteX = 576 / 2;
+    int gewensteAfstand = 250 * 100;
     long flytime = 0; //flytime in milleseconds
     long startTime = System.currentTimeMillis();
 
 
-    private IMeasuredValues measuredValues ;
+    private IMeasuredValues measuredValues;
     private PIDController yPIDController = new PIDController(gewensteY, 0);
     private PIDController xPIDController = new PIDController(gewensteX, 0);
     private PIDController afstandPidController = new PIDController(gewensteAfstand, 0);
@@ -102,14 +102,13 @@ public class FlyToBlueController implements Controller {
                 return new Command(0, 0, roll, 0, false, false);
 
 
-            } else {
-                int throttle = controlY();
-                LOGGER.info("throttle:" + throttle);
-
-                int yaw = controlX();
-                LOGGER.info("yaw:" + yaw);
-                return new Command(0, yaw, 0, throttle, false, false);
             }
+            int throttle = controlY();
+            LOGGER.info("throttle:" + throttle);
+
+            int yaw = controlX();
+            LOGGER.info("yaw:" + yaw);
+            return new Command(0, yaw, 0, throttle, false, false);
 
 
         }

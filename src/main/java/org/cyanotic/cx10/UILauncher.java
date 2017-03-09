@@ -1,8 +1,7 @@
 package org.cyanotic.cx10;
 
 import nl.craftsmen.cx10.FlyToBlueController;
-import nl.craftsmen.cx10.measure.IMeasuredValues;
-import nl.craftsmen.cx10.measure.MeasureValuesCache;
+import nl.craftsmen.cx10.measure.MeasuredValuesCache;
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.controllers.FlyInACircle;
 import org.cyanotic.cx10.controllers.Keyboard;
@@ -27,13 +26,13 @@ public class UILauncher {
     public static void main(String[] args) throws IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
-        MeasureValuesCache measureValuesCache = new MeasureValuesCache();
+        MeasuredValuesCache measuredValuesCache = new MeasuredValuesCache();
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
-                return new FlyToBlueController(measureValuesCache);
+                return new FlyToBlueController(measuredValuesCache);
             }
             @Override
             public String toString() {
@@ -90,7 +89,7 @@ public class UILauncher {
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {
-                return new RectangeDetector(executor,measureValuesCache);
+                return new RectangeDetector(executor, measuredValuesCache);
             }
 
             @Override
