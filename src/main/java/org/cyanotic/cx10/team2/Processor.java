@@ -5,5 +5,5 @@ package org.cyanotic.cx10.team2;
  */
 public interface Processor {
     Delta getDelta();
-    void setColor(String color);
+    void setColor(Color color);
 }

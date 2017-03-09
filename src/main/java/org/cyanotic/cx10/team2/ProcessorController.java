@@ -18,8 +18,8 @@ public class ProcessorController implements Controller {
     private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true);
     private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, false, false);
 
-    private static final String CAPTURE_COLOR = "red";
-    private static final String LAND_COLOR = "blue";
+    private static final Color CAPTURE_COLOR = Color.RED;
+    private static final Color LAND_COLOR = Color.BLUE;
 
     private boolean initialized = false;
     private boolean captured = false;

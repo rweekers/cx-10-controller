@@ -63,7 +63,7 @@ public class VideoProcessor extends ImageListener implements Processor {
     }
 
     @Override
-    public void setColor(String color) {
+    public void setColor(Color color) {
 
     }
 
