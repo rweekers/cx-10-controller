@@ -31,6 +31,10 @@ public class ByteUtils {
         return output.toString();
     }
 
+    public static byte[] intToBytes(int value) {
+        return new byte[]{(byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value};
+    }
+
     public static byte[] asUnsigned(int... values) {
         byte[] bytes = new byte[values.length];
         for (int i = 0; i < values.length; i++) {

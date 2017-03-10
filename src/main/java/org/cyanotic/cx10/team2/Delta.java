@@ -16,4 +16,11 @@ public class Delta extends Point {
     public int getScale() {
         return scale;
     }
+
+    @Override
+    public String toString() {
+        return "Delta{" +
+                "scale=" + scale +
+                "} " + super.toString();
+    }
 }

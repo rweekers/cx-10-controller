@@ -20,13 +20,14 @@ public class ProcessorController implements Controller {
     private static final int YAW_CORRECTION_VALUE = 50;
     private static final int THROTTLE_CORRECTION_VALUE = 50;
     private static final int PITCH_CORRECTION_VALUE = 50;
+    private static final int DELTA_THRESHOLD = 10;
 
     private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false);
     private static final Command LAND_COMMAND = new Command(0, 0, 0, 0, false, true);
     private static final Command IDLE_COMMAND = new Command(0, 0, 0, 0, false, false);
 
-    private final Color captureColor;
-    private final Color landColor;
+    private final Color captureColor = Color.RED;
+    private final Color landColor = Color.BLUE;
 
     private boolean initialized = false;
     private boolean captured = false;
@@ -36,11 +37,8 @@ public class ProcessorController implements Controller {
 
     private Command command = new Command(0, 0, 0, 0, true, false);
 
-    public ProcessorController(Processor processor, Color captureColor, Color landColor) {
+    public ProcessorController(Processor processor) {
         this.processor = processor;
-        this.captureColor = captureColor;
-        this.landColor = landColor;
-        this.processor.setColor(this.captureColor);
     }
 
     @Override
@@ -55,6 +53,8 @@ public class ProcessorController implements Controller {
             LOGGER.info("No video. Waiting...");
             return IDLE_COMMAND;
         }
+
+        LOGGER.info("Received delta " + delta);
 
         // not init
         if (!initialized) {
@@ -153,26 +153,18 @@ public class ProcessorController implements Controller {
     }
 
     private boolean searchCompleted(Delta delta) {
-        return Math.abs(delta.getX()) < 5 && Math.abs(delta.getY()) < 5 && Math.abs(delta.getScale()) < 5;
+        return Math.abs(delta.getX()) < DELTA_THRESHOLD && Math.abs(delta.getY()) < DELTA_THRESHOLD && Math.abs(delta.getScale()) < DELTA_THRESHOLD;
     }
 
     private void playSound(String fileName) {
         try {
             File soundFile = new File(getClass().getClassLoader().getResource(fileName).getFile());
 
-            AudioInputStream stream;
-            AudioFormat format;
-            DataLine.Info info;
-            Clip clip;
-
-            stream = AudioSystem.getAudioInputStream(soundFile);
-            format = stream.getFormat();
-            info = new DataLine.Info(Clip.class, format);
-            clip = (Clip) AudioSystem.getLine(info);
+            AudioInputStream stream = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
             clip.open(stream);
             clip.start();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             //whatevers
         }
     }

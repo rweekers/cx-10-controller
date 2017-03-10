@@ -12,6 +12,6 @@ import java.util.concurrent.ScheduledExecutorService;
 public class KeyboardWithPlayerLauncher {
     public static void main(String[] args) throws Exception {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
-        new CX10(executor, new Keyboard(), new SwingVideoPlayer(executor));
+        new CX10(executor, new Keyboard(), new SwingVideoPlayer());
     }
 }

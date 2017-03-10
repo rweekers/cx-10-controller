@@ -1,7 +1,5 @@
 package org.cyanotic.cx10.team2;
 
-import org.cyanotic.cx10.utils.ByteUtils;
-
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -13,15 +11,17 @@ public class ProcessedImage {
 
     private final int deltaX, deltaY;
 
+    private final List<PixelGroup> pixelGroups = new ArrayList<>();
     private final PixelGroup detectedPixelGroup;
 
     public ProcessedImage(ImageSource imageSource, Gate gate, Color color, int threshold) {
         // Initialize the variables.
-        Map<Integer, Integer> markedPixels = new HashMap<>();
+        Set<Integer> markedPixels = new HashSet<>();
 
         // Process the frame.
-        for (int y = gate.getTop(); y <= gate.getBottom(); y++) {
-            for (int x = gate.getLeft(); x <= gate.getRight(); x++) {
+        int step = (int) Math.nextUp(gate.getWidth() / 100);
+        for (int y = gate.getTop(); y <= gate.getBottom(); y += step) {
+            for (int x = gate.getLeft(); x <= gate.getRight(); x += step) {
                 int index = imageSource.getPixelIndex(x, y);
                 int pixel = imageSource.getPixel(index);
 
@@ -30,18 +30,19 @@ public class ProcessedImage {
                 int green = (pixel >> 8) & 0xFF;
                 int blue = pixel & 0xFF;
 
-                if (color.equals(Color.RED) && alpha > 200 && red > threshold && green < 100 && blue < 100) {
-                    markedPixels.put(index, red);
-                } else if (color.equals(Color.GREEN) && alpha > 200 && red < 100 && green > threshold && blue < 100) {
-                    markedPixels.put(index, red);
-                } else if (color.equals(Color.BLUE) && alpha > 200 && red < 100 && green < 100 && blue > threshold) {
-                    markedPixels.put(index, red);
+                boolean alphaMatches = alpha > color.getAlpha() - threshold && alpha < color.getAlpha() + threshold;
+                boolean redMatches = red > color.getRed() - threshold && red < color.getRed() + threshold;
+                boolean greenMatches = green > color.getGreen() - threshold && green < color.getGreen() + threshold;
+                boolean blueMatches = blue > color.getBlue() - threshold && blue < color.getBlue() + threshold;
+
+                if (alphaMatches && redMatches && greenMatches && blueMatches) {
+//                    System.out.println(index + " = " + ByteUtils.bytesToHex(ByteUtils.asUnsigned(alpha, red, green, blue)));
+                    markedPixels.add(index);
                 }
             }
         }
 
         // Store each group of pixels in a separate PixelGroup object.
-        List<PixelGroup> pixelGroups = new ArrayList<>();
         while (markedPixels.size() > 0) {
             pixelGroups.add(createPixelGroup(imageSource, markedPixels));
         }
@@ -53,8 +54,8 @@ public class ProcessedImage {
             deltaY = 0;
         } else {
             // Get the deltaX and deltaY relatively to the middle of the image.
-            deltaX = imageSource.getWidth() / 2 - (detectedPixelGroup.getLeft() + detectedPixelGroup.getRight()) / 2;
-            deltaY = imageSource.getHeight() / 2 - (detectedPixelGroup.getTop() + detectedPixelGroup.getBottom()) / 2;
+            deltaX = detectedPixelGroup.getHorizontalCenter() - (imageSource.getWidth() / 2);
+            deltaY = detectedPixelGroup.getVerticalCenter() - (imageSource.getHeight() / 2);
         }
     }
 
@@ -66,12 +67,12 @@ public class ProcessedImage {
         return deltaY;
     }
 
-    public PixelGroup getDetectedPixelGroup() {
-        return detectedPixelGroup;
+    public List<PixelGroup> getPixelGroups() {
+        return pixelGroups;
     }
 
-    private static void printPixel(int index, int pixel) {
-        System.out.println(index + " = " + ByteUtils.bytesToHex(new byte[]{(byte) (pixel >> 24), (byte) (pixel >> 16), (byte) (pixel >> 8), (byte) pixel}));
+    public PixelGroup getDetectedPixelGroup() {
+        return detectedPixelGroup;
     }
 
     private static PixelGroup determineBiggestPixelGroup(List<PixelGroup> pixelGroups) {
@@ -84,27 +85,28 @@ public class ProcessedImage {
         return biggest;
     }
 
-    private static PixelGroup determineBrightestPixelGroup(List<PixelGroup> pixelGroups) {
-        PixelGroup brightest = null;
-        for (PixelGroup pixelGroup : pixelGroups) {
-            if (pixelGroup == null) continue;
-            if (brightest != null && pixelGroup.getMean() < brightest.getMean()) continue;
-            brightest = pixelGroup;
-        }
-        return brightest;
-    }
+//    private static PixelGroup determineBrightestPixelGroup(List<PixelGroup> pixelGroups) {
+//        PixelGroup brightest = null;
+//        for (PixelGroup pixelGroup : pixelGroups) {
+//            if (pixelGroup == null) continue;
+//            if (brightest != null && pixelGroup.getMean() < brightest.getMean()) continue;
+//            brightest = pixelGroup;
+//        }
+//        return brightest;
+//    }
 
-    private static PixelGroup createPixelGroup(ImageSource imageSource, Map<Integer, Integer> markedPixels) {
+    private static PixelGroup createPixelGroup(ImageSource imageSource, Set<Integer> markedPixels) {
         PixelGroup pixelGroup = new PixelGroup(imageSource);
         int width = imageSource.getWidth();
         Stack<Integer> stack = new Stack<>();
-        int index = markedPixels.keySet().iterator().next();
+        int index = markedPixels.iterator().next();
         stack.push(index);
         while (stack.size() > 0) {
             index = stack.pop();
 
-            if (markedPixels.containsKey(index) && !pixelGroup.contains(index)) {
-                pixelGroup.add(index, markedPixels.remove(index));
+            if (markedPixels.contains(index) && !pixelGroup.contains(index)) {
+                markedPixels.remove(index);
+                pixelGroup.add(index);
                 stack.push(index - width - 1);
                 stack.push(index - width);
                 stack.push(index - width + 1);

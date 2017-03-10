@@ -1,7 +1,5 @@
 package org.cyanotic.cx10.team2;
 
-import java.awt.image.BufferedImage;
-
 /**
  * Created by gerard on 8-3-17.
  */
@@ -61,24 +59,5 @@ public class Gate {
 
     public int getBottom() {
         return y + height - 1;
-    }
-
-    public void draw(BufferedImage image, int rgbPixel) {
-        drawRectangle(image, getX(), getY(), getWidth(), getHeight(), rgbPixel);
-    }
-
-    public void drawRectangle(BufferedImage image, int x, int y, int width, int height, int rgbPixel) {
-        drawHorizontalLine(image, x, y, width, rgbPixel);
-        drawHorizontalLine(image, x, y + height - 1, width, rgbPixel);
-        drawVerticalLine(image, x, y, height, rgbPixel);
-        drawVerticalLine(image, x + width - 1, y, height, rgbPixel);
-    }
-
-    public void drawHorizontalLine(BufferedImage image, int x, int y, int width, int rgbPixel) {
-        for (int column = x; column < width + x; column++) image.setRGB(column, y, rgbPixel);
-    }
-
-    public void drawVerticalLine(BufferedImage image, int x, int y, int height, int rgbPixel) {
-        for (int line = y; line < height + y; line++) image.setRGB(x, line, rgbPixel);
     }
 }

@@ -26,12 +26,8 @@ public class UILauncher {
     public static void main(String[] args) throws IOException {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
-        VideoProcessor videoProcessor = new VideoProcessor(executor);
-        ProcessorController processorController = new ProcessorController(
-                videoProcessor,
-                Color.RED,
-                Color.BLUE
-        );
+        VideoProcessor videoProcessor = new VideoProcessor();
+        ProcessorController processorController = new ProcessorController(videoProcessor);
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
         controllers.add(new Supplier<Controller>() {
@@ -83,7 +79,7 @@ public class UILauncher {
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {
-                return new SwingVideoPlayer(executor);
+                return new SwingVideoPlayer();
             }
 
             @Override

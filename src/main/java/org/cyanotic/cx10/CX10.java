@@ -10,11 +10,14 @@ import org.cyanotic.cx10.net.CommandConnection;
 import org.cyanotic.cx10.net.TransportConnection;
 import org.cyanotic.cx10.net.VideoConnection;
 import org.cyanotic.cx10.net.decoder.CX10NalDecoder;
+import org.cyanotic.cx10.net.decoder.CX10NalDecoderInputStream;
 import org.cyanotic.cx10.net.decoder.H264Decoder;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by cyanotic on 28/11/2016.
@@ -27,10 +30,12 @@ public class CX10 implements Closeable {
     private final TransportConnection transportConnection;
     private final CommandConnection commandConnection;
     private final VideoConnection videoConnection;
+    private final CX10NalDecoderInputStream cx10NalDecoderInputStream;
     private final H264Decoder h264Decoder;
 
     private final Future<?> heartbeatFuture;
     private final Future<?> commandDispatcherFuture;
+    private final Future<?> cx10NalDecoderInputStreamFuture;
     private final Future<?> frameDispatcherFuture;
     private final Future<?> printStatsFuture;
 
@@ -45,7 +50,9 @@ public class CX10 implements Closeable {
 
         videoConnection = new VideoConnection(HOST, TRANSPORT_PORT);
         CX10NalDecoder cx10NalDecoder = new CX10NalDecoder(videoConnection.getInputStream());
-        h264Decoder = new H264Decoder(cx10NalDecoder);
+        cx10NalDecoderInputStream = new CX10NalDecoderInputStream(cx10NalDecoder);
+        cx10NalDecoderInputStreamFuture = executor.submit(cx10NalDecoderInputStream);
+        h264Decoder = new H264Decoder(cx10NalDecoderInputStream.getInputStream());
 
         PrintStatsFrameListener wrappedFrameListener = new PrintStatsFrameListener(frameListener);
         FrameDispatcher frameDispatcher = new FrameDispatcher(h264Decoder, wrappedFrameListener);
@@ -56,10 +63,12 @@ public class CX10 implements Closeable {
     @Override
     public void close() throws IOException {
         printStatsFuture.cancel(false);
+        cx10NalDecoderInputStreamFuture.cancel(false);
         frameDispatcherFuture.cancel(false);
         commandDispatcherFuture.cancel(false);
         heartbeatFuture.cancel(false);
 
+        cx10NalDecoderInputStream.close();
         h264Decoder.close();
         videoConnection.close();
         commandConnection.close();
