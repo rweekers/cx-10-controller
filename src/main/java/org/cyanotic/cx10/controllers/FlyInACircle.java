@@ -8,8 +8,8 @@ import org.cyanotic.cx10.api.Controller;
  */
 public class FlyInACircle implements Controller {
 
-    private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false);
-    private static final Command TURN_COMMAND = new Command(0, 50, 0, 1, false, false);
+    private static final Command TAKEOFF_COMMAND = new Command(0, 0, 0, 0, true, false, "takeoff");
+    private static final Command TURN_COMMAND = new Command(0, 50, 0, 1, false, false, "crice");
     private boolean initialized = false;
 
     @Override

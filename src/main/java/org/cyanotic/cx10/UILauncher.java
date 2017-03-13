@@ -2,8 +2,10 @@ package org.cyanotic.cx10;
 
 import org.cyanotic.cx10.api.Controller;
 import org.cyanotic.cx10.controllers.FlyInACircle;
+import org.cyanotic.cx10.controllers.HackatonController;
 import org.cyanotic.cx10.controllers.Keyboard;
 import org.cyanotic.cx10.api.FrameListener;
+import org.cyanotic.cx10.framelisteners.StubSensor;
 import org.cyanotic.cx10.framelisteners.SwingVideoPlayer;
 import org.cyanotic.cx10.framelisteners.VideoRecorder;
 import org.cyanotic.cx10.ui.MainWindow;
@@ -24,6 +26,19 @@ public class UILauncher {
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
 
         Collection<Supplier<Controller>> controllers = new ArrayList<>();
+        final HackatonController hackatonController = new HackatonController();
+        controllers.add(new Supplier<Controller>() {
+            @Override
+            public Controller get() {
+                return hackatonController;
+            }
+
+            @Override
+            public String toString() {
+                return "Hackaton";
+            }
+        });
+
         controllers.add(new Supplier<Controller>() {
             @Override
             public Controller get() {
@@ -35,19 +50,19 @@ public class UILauncher {
                 return "Keyboard";
             }
         });
-        controllers.add(new Supplier<Controller>() {
+
+        Collection<Supplier<FrameListener>> frameListeners = new ArrayList<>();
+        frameListeners.add(new Supplier<FrameListener>() {
             @Override
-            public Controller get() {
-                return new FlyInACircle();
+            public FrameListener get() {
+                return new StubSensor(hackatonController, executor);
             }
 
             @Override
             public String toString() {
-                return "FlyInACircle";
+                return "StubSensor";
             }
         });
-
-        Collection<Supplier<FrameListener>> frameListeners = new ArrayList<>();
         frameListeners.add(new Supplier<FrameListener>() {
             @Override
             public FrameListener get() {
