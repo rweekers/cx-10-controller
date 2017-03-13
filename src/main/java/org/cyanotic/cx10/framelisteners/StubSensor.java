@@ -1,12 +1,15 @@
 package org.cyanotic.cx10.framelisteners;
+
 import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacpp.opencv_imgproc;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.cyanotic.cx10.api.ImageListener;
 import org.cyanotic.cx10.controllers.HackatonController;
+import org.opencv.core.Mat;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
@@ -31,8 +34,19 @@ public class StubSensor extends ImageListener {
         opencv_imgproc.findContours(maskedMat, vector, opencv_imgproc.CV_SHAPE_RECT, opencv_imgproc.CHAIN_APPROX_TC89_L1);
         System.out.println("sending image data to controller");
         //vertel iets aan controller
+
+        Mat newMat = createMatFromImage(image);
+        newMat.size();
+
         hackatonController.onReceiveImageData(vector);
 
+    }
+
+    private Mat createMatFromImage(BufferedImage image) {
+        byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        Mat mat = new Mat();
+        mat.put(0, 0, pixels);
+        return mat;
     }
 
     @Override public void close() throws IOException {

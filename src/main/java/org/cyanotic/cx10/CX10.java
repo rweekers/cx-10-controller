@@ -41,7 +41,7 @@ public class CX10 implements Closeable {
 
         commandConnection = new CommandConnection(HOST, COMMAND_PORT);
         CommandDispatcher commandDispatcher = new CommandDispatcher(commandConnection, controller);
-        commandDispatcherFuture = executor.scheduleWithFixedDelay(commandDispatcher, 0, 50, TimeUnit.MILLISECONDS);
+        commandDispatcherFuture = executor.scheduleWithFixedDelay(commandDispatcher, 0, 150, TimeUnit.MILLISECONDS);
 
         videoConnection = new VideoConnection(HOST, TRANSPORT_PORT);
         CX10NalDecoder cx10NalDecoder = new CX10NalDecoder(videoConnection.getInputStream());
@@ -50,7 +50,7 @@ public class CX10 implements Closeable {
         PrintStatsFrameListener wrappedFrameListener = new PrintStatsFrameListener(frameListener);
         FrameDispatcher frameDispatcher = new FrameDispatcher(h264Decoder, wrappedFrameListener);
         frameDispatcherFuture = executor.submit(frameDispatcher);
-        printStatsFuture = executor.scheduleWithFixedDelay(wrappedFrameListener, 0, 1, TimeUnit.SECONDS);
+        printStatsFuture = executor.scheduleWithFixedDelay(wrappedFrameListener, 0, 3, TimeUnit.SECONDS);
     }
 
     @Override
