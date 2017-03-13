@@ -49,7 +49,7 @@ public class CX10 implements Closeable {
 
         PrintStatsFrameListener wrappedFrameListener = new PrintStatsFrameListener(frameListener);
         FrameDispatcher frameDispatcher = new FrameDispatcher(h264Decoder, wrappedFrameListener);
-        frameDispatcherFuture = executor.submit(frameDispatcher);
+        frameDispatcherFuture = executor.scheduleWithFixedDelay(frameDispatcher, 0, 50, TimeUnit.MILLISECONDS);
         printStatsFuture = executor.scheduleWithFixedDelay(wrappedFrameListener, 0, 1, TimeUnit.SECONDS);
     }
 
